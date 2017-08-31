@@ -15,21 +15,25 @@
 
 {% endcomment %}
 
-<form>
+<form method="post" enctype="multipart/form-data">
 
-  <div class="form-group">
-    <label for="exampleInputEmail1">Collection name</label>
-    <input type="form-text" class="form-control" id="addCollectionName" placeholder="Enter collection name">
-    <!-- <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
-  </div>
+	<div class="form-group">
+	<label for="exampleInputEmail1">Collection name</label>
+	<input type="form-text" class="form-control" id="addCollectionName" placeholder="Enter collection name" required="required">
+	</div>
 
-	<label class="btn btn-default btn-file">
-		Browse <input type="file">
-	</label>
+	
+
+	<br/><br/><br/>
+	<h3>Choose files:</h3>
+	
+	{% csrf_token %}    
+    <input type="file" name="files" required="required" multiple/>
+	
 
 	<br/><br/><br/>
 
-  <button type="submit" class="btn btn-primary">Submit</button>
+  <button type="submit" class="btn btn-primary" value="filesuploads">Submit</button>
 </form>
 
 

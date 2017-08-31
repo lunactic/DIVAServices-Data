@@ -7,10 +7,24 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.views import View
 from django.views.generic import TemplateView
+from django import forms
 
 # Create your views here.
 
 #function based view
+
+def addcollection(request, url):
+
+    if request.method=="POST":
+        f = request.FILES['files'] # here you get the files needed
+        print(f)
+         
+
+    context = {
+
+    }
+
+    return render(request,'add_collections.html',context)
 
 
 def collection(request, url):
@@ -83,15 +97,11 @@ class ContactView(View):
 
 		return render(request, "contact.html", context)
 
-class AddCollectionView(View):
-	def get(self, request, *args, **kwargs):
 
-		context = {}
-
-		return render(request, "add_collections.html", context)	
 
 class DeleteCollectionView(View):
 	def get(self, request, *args, **kwargs):
+
 
 		context = {}
 

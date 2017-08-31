@@ -12,41 +12,53 @@ import base64
 def uploader(request, url):
 
     if request.method=="POST":
-        f = request.FILES['sentFile'] # here you get the files needed
+        files = request.FILES.getlist('sentFile') # here you get the files needed
         
+        num = len(files)
 
-        print (f.name)
+        i=0
 
-        encoded = base64.b64encode(f.read())
+        for f in files:
+        	print(f.name)
+        	#print(f.read())
 
-        #print(encoded)
+        	encoded = base64.b64encode(f.read())
 
-        ext = f.name.split(".")
-        filename = ext[0]
-        ext = ext[1]
-        print(ext)
+        	#print(encoded)
 
-        data = {
-            "files":[
-            {
-                "type":"base64",
-                "value": str(encoded),
-                "name": filename,
-                "extension": ext
-            }
-            ]
-        }
+        	ext = f.name.split(".")
+        	filename = ext[0]
+        	ext = ext[1]
+        	#print(ext)
 
-        data = json.dumps(data)
-        headers = {'Content-type': 'application/json'}
+        	value = str(encoded)
+        	value = value[:-1]
+        	value = value.strip('b\'')
 
-        #print(data)
-        print(requests.put("http://divaservices.unifr.ch/api/v2/collections/"+url, data=data, headers=headers))
+        	#print(value)
 
-        # print(response)
+	        data = {
+	            "files":[
+	            {
+	                "type":"base64",
+	                "value": value,
+	                "name": filename,
+	                "extension": ext
+	            }
+	            ]
+	        }
 
-        #return HttpResponseRedirect("/uploader/"+url)
-        return HttpResponseRedirect("/collection/http://divaservices.unifr.ch/api/v2/collections/"+url)
+	        data = json.dumps(data)
+	        headers = {'Content-type': 'application/json'}
+
+	        #print(data)
+	        response=requests.put("http://divaservices.unifr.ch/api/v2/collections/"+url, data=data, headers=headers)
+
+	        print(response)
+
+	        i = i+1
+	        if i==num:
+		        return HttpResponseRedirect("/collection/http://divaservices.unifr.ch/api/v2/collections/"+url)
 
                 
 

@@ -37,7 +37,7 @@
 {% endcomment %}
 
 
-<h2>Uploading file to <em>{{name}}</em></h2>
+<h2>Uploading files to : <br/><br/> <em>{{name}}</em></h2>
 
 <br/>
 <br/>
@@ -61,7 +61,7 @@
 
 <form method="post" enctype="multipart/form-data">
 {% csrf_token %}    
-    <input type="file" name="sentFile" required="required" />
+    <input type="file" name="sentFile" required="required" multiple/>
     <input type="submit" name="submit" value="Upload" />
 </form>
 

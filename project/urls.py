@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.conf.urls.static import static
 from django.conf import settings
 
-from divaGui.views import collection, ContactTemplateView, CollectionsView, AddCollectionView, DeleteCollectionView, TryoutsTemplateView
+from divaGui.views import collection, ContactTemplateView, CollectionsView, DeleteCollectionView, TryoutsTemplateView, addcollection
 from uploader.views import uploader
 
 
@@ -27,7 +27,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^$', CollectionsView.as_view()),
     url(r'^practise/$', TryoutsTemplateView.as_view()),
-    url(r'^addnewcollection/$', AddCollectionView.as_view()),
+    url(r'^addnewcollection/(?P<url>[\w\W]*)$', addcollection),
     url(r'^deletecollection/$', DeleteCollectionView.as_view()),
     url(r'^contact/$', ContactTemplateView.as_view()),
     url(r'^collections/(?P<something>[\w\W]*)$', CollectionsView.as_view()),
