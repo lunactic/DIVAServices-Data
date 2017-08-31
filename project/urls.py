@@ -32,6 +32,5 @@ urlpatterns = [
     url(r'^contact/$', ContactTemplateView.as_view()),
     url(r'^collections/(?P<something>[\w\W]*)$', CollectionsView.as_view()),
     url(r'^collection/(?P<url>[\w\W]*)$', collection),
-
     url(r'^uploader/(?P<url>[\w\W]*)$', uploader, name='imageupload'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

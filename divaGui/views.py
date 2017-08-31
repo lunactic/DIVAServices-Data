@@ -8,6 +8,9 @@ from django.http import HttpResponse
 from django.views import View
 from django.views.generic import TemplateView
 from django import forms
+from django.http import HttpResponseRedirect
+
+import base64
 
 # Create your views here.
 
@@ -15,16 +18,94 @@ from django import forms
 
 def addcollection(request, url):
 
-    if request.method=="POST":
-        f = request.FILES['files'] # here you get the files needed
-        print(f)
-         
+	name = ''
 
-    context = {
+	if request.method=="POST":
+
+		name = request.POST.get("ime")
+
+		f = request.FILES['files'] # here you get the files needed
+
+		files = request.FILES.getlist('files')
+        
+		num = len(files)
+
+		i=0
+
+		for f in files:
+
+			if i == 0 :
+
+				encoded = base64.b64encode(f.read())
+
+	        	#print(encoded)
+
+				ext = f.name.split(".")
+				filename = ext[0]
+				ext = ext[1]
+				#print(ext)
+				value = str(encoded)
+				value = value[:-1]
+				value = value.strip('b\'')
+
+				data = {
+					"name": name,
+					"files":[
+						{
+							"type":"base64",
+							"value": value,
+							"name": filename,
+							"extension": ext
+						},
+					]
+				}
+
+				data = json.dumps(data)
+				headers = {'Content-type': 'application/json'}
+
+				response=requests.post("http://divaservices.unifr.ch/api/v2/collections/", data=data, headers=headers)
+
+
+			else :
+
+				encoded = base64.b64encode(f.read())
+
+	        	#print(encoded)
+
+				ext = f.name.split(".")
+				filename = ext[0]
+				ext = ext[1]
+				#print(ext)
+				value = str(encoded)
+				value = value[:-1]
+				value = value.strip('b\'')
+
+				data = {
+		            "files":[
+		            {
+		                "type":"base64",
+		                "value": value,
+		                "name": filename,
+		                "extension": ext
+		            }
+		            ]
+		        }
+
+				data = json.dumps(data)
+				headers = {'Content-type': 'application/json'}
+
+				response=requests.put("http://divaservices.unifr.ch/api/v2/collections/"+name, data=data, headers=headers)
+
+			i = i+1
+			if i==num:
+				return HttpResponseRedirect("/collection/http://divaservices.unifr.ch/api/v2/collections/"+name)
+
+
+	context = {
 
     }
 
-    return render(request,'add_collections.html',context)
+	return render(request,'add_collections.html',context)
 
 
 def collection(request, url):
@@ -105,7 +186,23 @@ class DeleteCollectionView(View):
 
 		context = {}
 
-		return render(request, "delete_collection.html", context)		
+		return render(request, "delete_collection.html", context)	
+
+	def post(self, request, *args, **kwargs):
+
+		name = self.request.POST.get("name")
+
+		#print(name)
+
+		payload = {'some':'data'}
+
+		headers = {'content-type': 'application/json'}
+
+		response = requests.delete("http://divaservices.unifr.ch/api/v2/collections/"+name, data=json.dumps(payload), headers=headers)
+
+		context = {}
+
+		return HttpResponseRedirect("/collections/")	
 
 
 class CollectionsView(View):

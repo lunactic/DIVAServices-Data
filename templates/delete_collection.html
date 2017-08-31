@@ -16,11 +16,14 @@
 
 {% endcomment %}
 
-<form>
+<form method="post" enctype="multipart/form-data"> 
 
   <div class="form-group">
+  <br/><br/>
     <label for="exampleInputEmail1">Collection name</label>
-    <input type="form-text" class="form-control" id="deleteCollectionName" placeholder="Enter collection name">
+    <br/>
+    {% csrf_token %}
+    <input name="name" value="{{name}}" type="form-text" class="form-control" id="deleteCollectionName" placeholder="Enter collection name">
     <small id="emailHelp" class="form-text text-muted">Please double check collection name before deleting.</small>
   </div>
 
