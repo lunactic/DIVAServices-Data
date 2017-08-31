@@ -1,0 +1,72 @@
+{% extends "divaTemplate.html" %}
+
+
+
+
+{% block content %}
+
+
+<br/>
+
+<br/>
+
+{% comment %}
+
+	--- views.py for uploader to database----------
+    -----------------------------------------------
+
+	if request.method=="POST":
+        img = UploadForm(request.POST, request.FILES)       
+        if img.is_valid():
+        
+            #img.save()  
+            encoded = request.FILES
+            print(encoded)
+            
+            return HttpResponseRedirect("/uploader/"+url)
+            #return HttpResponseRedirect("/collection/http://divaservices.unifr.ch/api/v2/collections/"+url)
+    else:
+        img=UploadForm()
+        encoded = 'empty'
+                
+
+    images=Upload.objects.all()
+
+    -----------------------------------------------
+
+{% endcomment %}
+
+
+<h2>Uploading file to <em>{{name}}</em></h2>
+
+<br/>
+<br/>
+
+<!--
+    <div style="padding:40px;margin:40px;border:1px solid #ccc">
+        <h1>Choose file then upload</h1>
+        <form action="#" method="post" enctype="multipart/form-data">
+            {% csrf_token %} {{form}}
+            <input type="submit" value="Upload" />
+        </form>
+        {% for img in images %}
+            {{forloop.counter}}.<a href="{{ img.pic.url }}" target="_blank">{{ img.pic.name }}</a>
+            ({{img.upload_date}})<hr />
+        {% endfor %}
+    </div>
+
+
+    <br/>
+-->
+
+<form method="post" enctype="multipart/form-data">
+{% csrf_token %}    
+    <input type="file" name="sentFile" required="required" />
+    <input type="submit" name="submit" value="Upload" />
+</form>
+
+
+
+{% endblock content %}
+
+

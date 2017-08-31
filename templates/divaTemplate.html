@@ -1,0 +1,35 @@
+{# Load the tag library #}
+{% load bootstrap3 %}
+
+{# Load CSS and JavaScript #}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% bootstrap_messages %}
+<!DOCTYPE html>
+<html lang=en>
+
+	<head>
+		<title>{% block head_title %}DIVA GUI{% endblock head_title %}</title>
+		{% include 'snippets/css.html' %}
+	</head>
+	
+	<body>
+	{% include 'snippets/nav.html' %}
+
+	<div class='container' style="width: 100%; margin-bottom: 20px;">
+	{% block content %}
+	This block is from the template base diva app html folder and is visible only from inheritance
+
+	
+
+
+	{% endblock content %}
+	</div>
+
+
+
+	{% include 'snippets/js.html' %}
+	</body>
+</html>

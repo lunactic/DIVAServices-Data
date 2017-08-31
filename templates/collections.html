@@ -1,0 +1,31 @@
+{% extends "divaTemplate.html" %}
+
+{% block head_title %}{{block.super}} - collections {% endblock head_title %}
+
+
+{% block content %}
+
+{% include 'snippets/search_collections.html' %}
+
+<br/>
+<h1>Collections: {{name}} </h1>
+<br/>
+
+{% comment %}
+
+	ISPOD OVOGA SAM DOHVATIO UKUPNE KOLEKCIJE i izlistao ih po imenu i url
+
+{% endcomment %}
+
+
+
+{% for item in collections %}
+	<h4><strong><a href='/collection/{{item.collection.url}}/'>{{item.collection.name}}</a></strong> (<small class="text-muted"> <em><a href="{{item.collection.url}}/" target="_blank">DirectURL</a> </em></small> ) </h4> 
+	<br/>
+{% endfor %}
+
+
+
+
+
+{% endblock content %}

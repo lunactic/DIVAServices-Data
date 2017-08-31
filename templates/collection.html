@@ -1,0 +1,79 @@
+{% extends "divaTemplate.html" %}
+
+{% block head_title %}{{block.super}} - {{name}}{% endblock head_title %}
+
+{% block content %}
+
+{% comment %}
+
+Selected collection page
+
+{% endcomment %}
+
+<br/>
+<br/>
+
+<h4><strong><big>Collection:</big> {{name}}</strong> (<small class="text-muted"> <em><a href={{directLink}} target="_blank">DirectURL</a> </em></small> ) </h4> 
+<br/>
+
+<em>
+<a href="/uploader/{{name}}" >
+<h4>Add file to collection: </h4>
+</a>
+</em>
+
+<br/>
+
+<!-- <input type="file" name="file" style="margin-left: 30px;"> -->
+
+
+<br/><br/>
+
+<div style="margin-left: 5px;">
+<h4>Status code: {{statusCode}}</h4>
+
+
+<h4>Status mesage: {{statusMessage}}</h4>
+
+
+<h4>Percentage: {{percentage}}%</h4>
+
+
+<h4>Number of files: {{numberOfFiles}}</h4>
+</div>
+
+<br/>
+
+
+
+{% if isXML %}
+
+{% for element, name in images %}
+
+<a href={{element}} target="_blank"><h5>{{forloop.counter}}. {{name}} (Click to view) </h5></a>
+<br/>
+<br/>
+
+{% endfor %}
+
+{% else %}
+
+
+{% for element, name in images %}
+	
+	<a href={{element}} target="_blank" alt="alt testing" title={{name}} style="border-style:1px solid black;">
+	<img  src={{element}} alt={{name}} style="padding:5px; height:350px;width:350px;border-radius:15px;">
+	</img>
+	</a>
+
+{% endfor %}
+
+
+{% endif %}
+
+
+
+<br/>
+
+
+{% endblock content %}

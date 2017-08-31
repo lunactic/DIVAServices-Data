@@ -1,0 +1,39 @@
+{% extends "divaTemplate.html" %}
+
+
+
+{% block content %}
+
+
+<br/>
+<h1>Add collection: </h1>
+<br/>
+
+{% comment %}
+
+	Dodaj kolekciju
+
+{% endcomment %}
+
+<form>
+
+  <div class="form-group">
+    <label for="exampleInputEmail1">Collection name</label>
+    <input type="form-text" class="form-control" id="addCollectionName" placeholder="Enter collection name">
+    <!-- <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
+  </div>
+
+	<label class="btn btn-default btn-file">
+		Browse <input type="file">
+	</label>
+
+	<br/><br/><br/>
+
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+
+
+
+
+{% endblock content %}
