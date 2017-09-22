@@ -6,6 +6,7 @@
 *.pot
 *.py[co]
 .tox/
+.vscode/
 __pycache__
 **/__pycache__/
 MANIFEST
