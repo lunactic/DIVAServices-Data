@@ -24,13 +24,13 @@ from uploader.views import uploader
 
 
 urlpatterns = [
-    url(r'^/data/admin/', admin.site.urls),
-    url(r'^/data/$', CollectionsView.as_view()),
-    url(r'^/data/practise/$', TryoutsTemplateView.as_view()),
-    url(r'^/data/addnewcollection/(?P<url>[\w\W]*)$', addcollection),
-    url(r'^/data/deletecollection/$', DeleteCollectionView.as_view()),
-    url(r'^/data/contact/$', ContactTemplateView.as_view()),
-    url(r'^/data/collections/(?P<something>[\w\W]*)$', CollectionsView.as_view()),
-    url(r'^/data/collection/(?P<url>[\w\W]*)$', collection),
-    url(r'^/data/uploader/(?P<url>[\w\W]*)$', uploader, name='imageupload'),
+    url(r'^data/admin/', admin.site.urls),
+    url(r'^data/$', CollectionsView.as_view()),
+    url(r'^data/practise/$', TryoutsTemplateView.as_view()),
+    url(r'^data/addnewcollection/(?P<url>[\w\W]*)$', addcollection),
+    url(r'^data/deletecollection/$', DeleteCollectionView.as_view()),
+    url(r'^data/contact/$', ContactTemplateView.as_view()),
+    url(r'^data/collections/(?P<something>[\w\W]*)$', CollectionsView.as_view()),
+    url(r'^data/collection/(?P<url>[\w\W]*)$', collection),
+    url(r'^data/uploader/(?P<url>[\w\W]*)$', uploader, name='imageupload'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
