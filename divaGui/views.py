@@ -84,7 +84,7 @@ def addcollection(request, url):
 
             i = i + 1
             if i == num:
-                return HttpResponseRedirect("/collection/http://divaservices.unifr.ch/api/v2/collections/" + name)
+                return HttpResponseRedirect("/collection/" + name)
 
     context = {
 
@@ -94,6 +94,7 @@ def addcollection(request, url):
 
 
 def collection(request, url):
+    url = "http://divaservices.unifr.ch/api/v2/collections/"+url
     result = requests.get(url)
     result = result.json()
     name = url.split("/")
@@ -148,9 +149,7 @@ def collection(request, url):
 
 class ContactView(View):
     def get(self, request, *args, **kwargs):
-
         context = {}
-
         return render(request, "contact.html", context)
 
 
@@ -167,7 +166,7 @@ class DeleteCollectionView(View):
         response = requests.delete(
             "http://divaservices.unifr.ch/api/v2/collections/" + name, data=json.dumps(payload), headers=headers)
         context = {}
-        return HttpResponseRedirect("/collections/")
+        return HttpResponseRedirect("/data/collections/")
 
 
 class CollectionsView(View):

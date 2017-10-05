@@ -30,7 +30,8 @@ ALLOWED_HOSTS = [
     'divaservices.unifr.ch'
 ]
 
-FORCE_SCRIPT_NAME = '/data'
+USE_X_FORWARDED_HOST = True
+FORCE_SCRIPT_NAME = '/data/'
 
 # Application definition
 
