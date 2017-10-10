@@ -1,0 +1,92 @@
+{% extends "divaTemplate.html" %}
+
+{% block head_title %}{{block.super}} - {{methodName}} {% endblock head_title %}
+
+
+{% block content %}
+
+<br/>
+<h1>Method: {{methodName}}</h1>
+<br/>
+(<a href={{directLink}} target=_blank>direct link</a>)
+<br/><br/>
+
+
+{% comment %}
+
+	OVDE IDE KONKRETAN METOD
+
+{% endcomment %}
+
+<div class="row">
+	<div class="col-md-2">
+	{% for item in detailsKeys %}
+  		<h4>{{item}} :</h4>
+  	{% endfor %}
+	</div>
+	<div class="col-md-10">
+	{% for item in detailsValues %}
+  		<h4>{{item}}</h4>
+  	{% endfor %}
+	</div>
+</div>
+
+{% if showCollectionsForm %}
+<form method="post" enctype="multipart/form-data" style="margin-top:60px;">
+  <input type='hidden' name='url' value={{url}}>
+  <input type='hidden' name='methodName' value={{methodName}}>
+  <input type='hidden' name='applicationFlag' value=False>
+  <label for="sel1">Select collection:</label>
+  <select class="form-control" id="sel1" name="sel1">
+  	<option label=" "> -- select a collection -- </option>
+  	{% for item in collections %}
+  	<option>{{item.collection.name}}</option>
+  	{% endfor %}
+  	{% csrf_token %} 
+  </select>
+
+  <br/><br/><br/>
+
+  <button type="submit" class="btn btn-primary" value="select">Apply this method on collection</button>
+</form>
+{% else %}
+<br/><br/>
+<h1>Collection: {{collectionName}}</h1>
+
+{% endif %}
+
+	
+{% if showFilesForm %}
+<form method="post" enctype="multipart/form-data" style="margin-top:30px;">
+  <input type='hidden' name='url' value={{url}}>
+  <input type='hidden' name='sel1' value={{name}}>
+  <input type='hidden' name='methodName' value={{methodName}}>
+  <input type='hidden' name='applicationFlag' value=True>
+  <label for="sel2">Select files:</label>
+  <select class="form-control ui fluid dropdown" id="sel2" name="sel2" multiple="">
+  	{% for item in imgNames %}
+  	<option>{{item}}</option>
+  	{% endfor %}
+  	{% csrf_token %} 
+  	
+  	{% csrf_token %} 
+  </select>
+
+  <br/><br/><br/>
+
+  <button type="submit" class="btn btn-primary" value="selectFiles">Apply this method on these files</button>
+</form>
+{% endif %}
+
+<!--<div class="row" style="margin-top:60px;">
+	<div class="col-md-6">
+		the image will go here
+	</div>
+	<div class="col-md-6">
+		the automatic input will go here
+	</div>
+</div>-->
+
+
+
+{% endblock content %}

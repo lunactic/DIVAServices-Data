@@ -49,9 +49,9 @@ Selected collection page
 
 {% if isXML %}
 
-{% for element, name in images %}
+{% for element, filename in images %}
 
-<a href={{element}} target="_blank"><h5>{{forloop.counter}}. {{name}} (Click to view) </h5></a>
+<a href={{element}} target="_blank"><h5>{{forloop.counter}}. {{filename}} (Click to view) </h5></a>
 <br/>
 <br/>
 
@@ -60,12 +60,22 @@ Selected collection page
 {% else %}
 
 <div class="row">
-{% for element, name in images %}
+{% for element, filename in images %}
 
 	<div class="col-md-4" style="padding-top: 10px;">
-		<h4 class="text-center justify-center">{{name}}  <small>  ( <a href="#">delete<span title="Delete file" class="glyphicon xs glyphicon-trash" style="color:black; size"></span></a> )</small></h4>
-		<a href={{element}} target="_blank" alt="alt testing" title={{name}} style="border-style:1px solid black;">
-			<img  src={{element}} alt={{name}} style="height:350px;width:350px;border-radius:15px;"></img>
+		<form method="post" enctype="multipart/form-data"> 
+			{% csrf_token %}
+			<input type='hidden' name='filename' value={{filename}}>
+			<input type='hidden' name='name' value={{name}}>
+			<h4 class="text-center justify-center">
+				{{filename}}  
+				<button type="submit" class="btn btn-primary" style="color:#fff; float: right; margin-bottom:10px;">
+					<strong>delete</strong>
+				</button>   
+			</h4>
+		</form>
+		<a href={{element}} target="_blank" alt="alt testing" title={{filename}} style="border-style:1px solid black;">
+			<img  src={{element}} alt={{filename}} style="height:350px;width:350px;border-radius:15px;"></img>
 		</a>
 	</div>
 

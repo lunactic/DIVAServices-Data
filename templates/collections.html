@@ -20,7 +20,7 @@
 
 
 {% for item in collections %}
-	<h4><strong><a href='/data/collection/{{item.collection.name}}/'>{{item.collection.name}}</a></strong> (<small class="text-muted"> <em><a href="{{item.collection.url}}/" target="_blank">DirectURL</a> </em></small> ) </h4> 
+	<h4><strong><a href='/collection/{{item.collection.name}}/'>{{item.collection.name}}</a></strong> (<small class="text-muted"> <em><a href="{{item.collection.url}}/" target="_blank">DirectURL</a> </em></small> ) </h4> 
 	<br/>
 {% endfor %}
 

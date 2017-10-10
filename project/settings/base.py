@@ -27,11 +27,12 @@ SECRET_KEY = '%^y+fq_t&i!ldcg^or-_@g9k7y^$^-&z5&0*nb-xhai(al&q60'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'divaservices.unifr.ch'
+    'divaservices.unifr.ch',
+    '127.0.0.1'
 ]
 
 USE_X_FORWARDED_HOST = True
-FORCE_SCRIPT_NAME = '/data/'
+#FORCE_SCRIPT_NAME = '/data/'
 
 # Application definition
 

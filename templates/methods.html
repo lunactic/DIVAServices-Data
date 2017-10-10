@@ -1,0 +1,28 @@
+{% extends "divaTemplate.html" %}
+
+{% block head_title %}{{block.super}} - methods {% endblock head_title %}
+
+
+{% block content %}
+
+<br/>
+<h1>Methods: </h1>
+<br/>
+
+{% comment %}
+
+	ISPOD OVOGA SAM DOHVATIO METODE i izlistao ih po imenu i url
+
+{% endcomment %}
+
+
+
+{% for item in methods %}
+	<h4><strong><a href="/method/{{item.type}}/{{item.name}}">{{item.name}}</a></strong> (<small class="text-muted"> <em><a href="{{item.url}}/" target="_blank">DirectURL</a> </em></small> ) </h4> 
+	<br/>
+{% endfor %}
+
+
+
+
+{% endblock content %}

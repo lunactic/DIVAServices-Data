@@ -52,7 +52,7 @@ def addcollection(request, url):
                 data = json.dumps(data)
                 headers = {'Content-type': 'application/json'}
                 response = requests.post(
-                    "http://divaservices.unifr.ch/api/v2/collections/", data=data, headers=headers)
+                    diva, data=data, headers=headers)
             else:
                 encoded = base64.b64encode(f.read())
 
@@ -81,11 +81,11 @@ def addcollection(request, url):
                 headers = {'Content-type': 'application/json'}
 
                 response = requests.put(
-                    "http://divaservices.unifr.ch/api/v2/collections/" + name, data=data, headers=headers)
+                    diva + name, data=data, headers=headers)
 
             i = i + 1
             if i == num:
-                return HttpResponseRedirect("/collection/" + name)
+                return HttpResponseRedirect("/collection/"+name)
 
     context = {
 
@@ -94,58 +94,135 @@ def addcollection(request, url):
     return render(request, 'add_collections.html', context)
 
 
-def collection(request, url):
-    url = "http://divaservices.unifr.ch/api/v2/collections/"+url
-    result = requests.get(url)
-    result = result.json()
-    name = url.split("/")
-    name = name[6]
-    images = []
-    numberOfFiles = 0
-    statusCode = ''
-    statusMessage = ''
-    percentage = ''
-
-    statusCode = result['statusCode']
-    statusMessage = result['statusMessage']
-    percentage = result['percentage']
-
-    isXML = False
-
-    for element in result['files']:
-        temp = element['file']['url']
-        images.append(temp)
-        numberOfFiles = numberOfFiles + 1
-        temp = temp.split(".")
-        temp = temp[len(temp) - 1]
-        if temp == "xml":
-            isXML = True
-
-    imgNames = []
-
-    for element in result['files']:
-        temp = element['file']['url']
-        temp = temp.split("/")
-        imgNames.append(temp[8])
-
-    # KEEP IDENTATION!
-    images = zip(images, imgNames)
-
-    context = {
-        "imgNames": imgNames,
-        "isXML": isXML,
-        "directLink": url,
-        "name": name,
-        "statusCode": statusCode,
-        "statusMessage": statusMessage,
-        "percentage": percentage,
-        "numberOfFiles": numberOfFiles,
-        "images": images,
-        "result": result,
-    }
-    return render(request, "collection.html", context)
+#def collection(request, url):
+#    url = diva+url
+#    print(url)
+#    print("OVDEOVDEOVDEOVDEOVDEOVDEOVDEOVDEOVDEOVDEOVDEOVDE")
+#    result = requests.get(url)
+#    result = result.json()
+#    name = url.split("/")
+#    #name = name[6]
+#    name = name[4]
+#    images = []
+#    numberOfFiles = 0
+#    statusCode = ''
+#    statusMessage = ''
+#    percentage = ''
+#    statusCode = result['statusCode']
+#    statusMessage = result['statusMessage']
+#    percentage = result['percentage']
+#
+#    isXML = False
+#
+#    for element in result['files']:
+#    	temp = element['file']['url']
+#    	images.append(temp)
+#    	numberOfFiles = numberOfFiles + 1
+#    	temp = temp.split(".")
+#    	temp = temp[len(temp) - 1]
+#    	if temp == "xml":
+#    		isXML = True
+#
+#    imgNames = []
+#
+#    for element in result['files']:
+#    	temp = element['file']['url']
+#    	temp = temp.split("/")
+#    	imgNames.append(temp[6])
+#    	#imgNames.append(temp[8])
+#
+#    # KEEP IDENTATION!
+#    images = zip(images, imgNames)
+#
+#    context = {
+#	    "imgNames": imgNames,
+#	    "isXML": isXML,
+#	    "directLink": url,
+#	    "name": name,
+#	    "statusCode": statusCode,
+#	    "statusMessage": statusMessage,
+#	    "percentage": percentage,
+#	    "numberOfFiles": numberOfFiles,
+#	    "images": images,
+#	    "result": result,
+#	}
+#    return render(request, "collection.html", context)
 
 ####################### VIEWS #############################
+
+#######################################################################
+
+
+class CollectionView(View):
+    def get(self, request, *args, **kwargs):
+        url = diva+self.kwargs['url']
+        result = requests.get(url)
+        result = result.json()
+        name = url.split("/")
+        #name = name[6]
+        name = name[4]
+        images = []
+        numberOfFiles = 0
+        statusCode = ''
+        statusMessage = ''
+        percentage = ''
+        statusCode = result['statusCode']
+        statusMessage = result['statusMessage']
+        percentage = result['percentage']
+
+        isXML = False
+
+        for element in result['files']:
+        	temp = element['file']['url']
+        	images.append(temp)
+        	numberOfFiles = numberOfFiles + 1
+        	temp = temp.split(".")
+        	temp = temp[len(temp) - 1]
+        	if temp == "xml":
+        		isXML = True
+
+        imgNames = []
+
+        for element in result['files']:
+        	temp = element['file']['url']
+        	temp = temp.split("/")
+        	imgNames.append(temp[6])
+        	#imgNames.append(temp[8])
+
+        # KEEP IDENTATION!
+        images = zip(images, imgNames)
+
+        context = {
+		    "imgNames": imgNames,
+		    "isXML": isXML,
+		    "directLink": url,
+		    "name": name,
+		    "statusCode": statusCode,
+		    "statusMessage": statusMessage,
+		    "percentage": percentage,
+		    "numberOfFiles": numberOfFiles,
+		    "images": images,
+		    "result": result,
+		}
+        return render(request, "collection.html", context)
+
+    def post(self, request, *args, **kwargs):
+        filename = self.request.POST.get("filename")
+        collection = self.request.POST.get("name")
+        
+        url = diva+collection+ '/'  + filename
+        print(filename)
+        print(url)
+        payload = {'some': 'data'}
+        headers = {'content-type': 'application/json'}
+        response = requests.delete(
+            url, data=json.dumps(payload), headers=headers)
+        print(response)
+        response = requests.get(diva+collection)
+        print(response)
+        context = {}
+        return HttpResponseRedirect("/collection/"+collection)
+
 
 
 class ContactView(View):
@@ -166,16 +243,181 @@ class DeleteCollectionView(View):
         payload = {'some': 'data'}
         headers = {'content-type': 'application/json'}
         response = requests.delete(
-            "http://divaservices.unifr.ch/api/v2/collections/" + name, data=json.dumps(payload), headers=headers)
+            diva + name, data=json.dumps(payload), headers=headers)
         context = {}
-        return HttpResponseRedirect("/data/collections/")
+        return HttpResponseRedirect("/collections/")
 
+class MethodsView(View):
+    def get(self, request, *args, **kwargs):
+        url = "http://divaservices.unifr.ch/api/v2/"
+
+        result = requests.get(url)
+        result = result.json()
+
+        methods = []
+
+        #print(result)
+        for element in result:
+            methods.append(element)
+
+        context = {
+            "methods": methods,
+        }
+        return render(request, "methods.html", context)
+
+class MethodView(View):
+    methodName = ""
+    url = ""
+    collectionName= ""
+
+    def get(self, request, *args, **kwargs):
+        url = self.kwargs['url']
+
+        url = url.lower()
+        url = url.replace(" ", "")
+
+        MethodView.url = url
+
+
+        showCollectionsForm = True
+        showFilesForm = False
+
+        #print(showFilesForm)
+
+        response = requests.get(diva)
+        response = response.json()
+        collections = []
+
+        for element in response['collections']:
+                collections.append(element)
+
+        #print(url)
+
+
+        result = requests.get("http://divaservices.unifr.ch/api/v2/"+url+"/1")
+        result = result.json()
+
+        MethodView.methodName = result['general']['name']
+
+        detailsKeys = []
+        detailsValues = []
+
+        for element in result['general'].keys():
+            detailsKeys.append(element)
+
+        for element in result['general'].values():
+            detailsValues.append(element)
+
+        #print(detailsKeys)
+        #print(detailsValues)
+
+        context = {
+            "detailsKeys": detailsKeys,
+            "detailsValues": detailsValues,
+            "methodName": result['general']['name'],
+            "collections": collections,
+            "showCollectionsForm": showCollectionsForm,
+            "showFilesForm": showFilesForm,
+            "url": url,
+        }
+        return render(request, "method.html", context)
+
+    def post(self, request, *args, **kwargs):
+        methodName = MethodView.methodName
+        url = MethodView.url
+        applicationFlag = self.request.POST.get("applicationFlag")
+        filename = self.request.POST.getlist("sel2")
+        collectionName = self.request.POST.get("sel1")
+
+        if(collectionName):
+            MethodView.collectionName = collectionName
+        else:
+            collectionName = MethodView.collectionName
+
+        #print(collectionName)
+
+        #print(applicationFlag)
+
+        showCollectionsForm = False
+
+        images = []
+        imgNames = []
+        
+        if applicationFlag=="False":
+            showFilesForm = True
+            res = requests.get(diva+collectionName)
+            res = res.json()
+
+            
+            numberOfFiles = 0
+            statusCode = ''
+            statusMessage = ''
+            percentage = ''
+            statusCode = res['statusCode']
+            statusMessage = res['statusMessage']
+            percentage = res['percentage']
+
+            isXML = False
+
+            for element in res['files']:
+                temp = element['file']['url']
+                images.append(temp)
+                numberOfFiles = numberOfFiles + 1
+                temp = temp.split(".")
+                temp = temp[len(temp) - 1]
+                if temp == "xml":
+                    isXML = True
+
+            
+
+            for element in res['files']:
+                temp = element['file']['url']
+                temp = temp.split("/")
+                imgNames.append(temp[6])
+                #imgNames.append(temp[8])
+
+            MethodView.imgNames = imgNames
+        else:  #i have selected the collection and selected files from it
+            showFilesForm = False
+            imgNames = MethodView.imgNames
+            print(filename)
+            
+
+        result = requests.get("http://divaservices.unifr.ch/api/v2/"+url+"/1")
+        result = result.json()
+
+        #print("http://divaservices.unifr.ch/api/v2/"+url+"/1")
+
+        detailsKeys = []
+        detailsValues = []
+
+        for element in result['general'].keys():
+            detailsKeys.append(element)
+
+        for element in result['general'].values():
+            detailsValues.append(element)
+
+
+        payload = {'some': 'data'}
+        headers = {'content-type': 'application/json'}
+        #response = requests.delete(
+        #    diva + name, data=json.dumps(payload), headers=headers)
+        context = {
+            "detailsKeys": detailsKeys,
+            "detailsValues": detailsValues,
+            "methodName": methodName,
+            "showCollectionsForm": showCollectionsForm,
+            "showFilesForm": showFilesForm,
+            "collectionName": collectionName,
+            "imgNames": imgNames,
+        }
+        return render(request, "method.html", context)
 
 class CollectionsView(View):
     def get(self, request, *args, **kwargs):
         name = self.request.GET.get('q')
 
-        url = "http://divaservices.unifr.ch/api/v2/collections/"
+        url = diva
         result = requests.get(url)
         result = result.json()
         collections = []

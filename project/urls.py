@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.conf.urls.static import static
 from django.conf import settings
 
-from divaGui.views import collection, ContactTemplateView, CollectionsView, DeleteCollectionView, TryoutsTemplateView, addcollection
+from divaGui.views import ContactTemplateView, CollectionsView, DeleteCollectionView, CollectionView, MethodsView, TryoutsTemplateView, addcollection, MethodView
 from uploader.views import uploader
 
 
@@ -31,6 +31,8 @@ urlpatterns = [
     url(r'^deletecollection/$', DeleteCollectionView.as_view()),
     url(r'^contact/$', ContactTemplateView.as_view()),
     url(r'^collections/(?P<something>[\w\W]*)$', CollectionsView.as_view()),
-    url(r'^collection/(?P<url>[\w\W]*)$', collection),
+    url(r'^methods/(?P<something>[\w\W]*)$', MethodsView.as_view()),
+    url(r'^method/(?P<url>[\w\W]*)$', MethodView.as_view()),
+    url(r'^collection/(?P<url>[\w\W]*)$', CollectionView.as_view()),
     url(r'^uploader/(?P<url>[\w\W]*)$', uploader, name='imageupload'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
