@@ -13,14 +13,15 @@ Selected collection page
 <br/>
 <br/>
 
-<h4><strong><big>Collection:</big> {{name}}</strong> (<small class="text-muted"> <em><a href={{directLink}} target="_blank">DirectURL</a> </em></small> ) </h4> 
+<h4><strong><big>Collection:</big> {{name}}</strong> (<small class="text-muted"> <em><a href={{directLink}} target="_blank">DirectURL</a> </em></small> ) </h4>
 <br/>
 
 <em>
 <a href="/uploader/{{name}}" >
-<h4>Add files to collection: </h4>
+<h4>Add files to collection </h4>
 </a>
 </em>
+{{fileAlreadyExists}}
 
 <br/>
 
@@ -42,7 +43,7 @@ Selected collection page
 <h4>Number of files: {{numberOfFiles}}</h4>
 </div>
 
-<br/>
+<br/><br/>
 
 
 
@@ -58,16 +59,19 @@ Selected collection page
 
 {% else %}
 
-
+<div class="row">
 {% for element, name in images %}
-	
-	<a href={{element}} target="_blank" alt="alt testing" title={{name}} style="border-style:1px solid black;">
-	<img  src={{element}} alt={{name}} style="padding:5px; height:350px;width:350px;border-radius:15px;">
-	</img>
-	</a>
+
+	<div class="col-md-4" style="padding-top: 10px;">
+		<h4 class="text-center justify-center">{{name}}  <small>  ( <a href="#">delete<span title="Delete file" class="glyphicon xs glyphicon-trash" style="color:black; size"></span></a> )</small></h4>
+		<a href={{element}} target="_blank" alt="alt testing" title={{name}} style="border-style:1px solid black;">
+			<img  src={{element}} alt={{name}} style="height:350px;width:350px;border-radius:15px;"></img>
+		</a>
+	</div>
+
 
 {% endfor %}
-
+</div>
 
 {% endif %}
 

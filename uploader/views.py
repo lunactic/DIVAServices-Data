@@ -5,21 +5,23 @@ from django.core.urlresolvers import reverse
 import requests
 import json
 import base64
+from links.links import *
 # Create your views here.
 
 
 
 def uploader(request, url):
 
+
     if request.method=="POST":
         files = request.FILES.getlist('sentFile') # here you get the files needed
-        
+
         num = len(files)
 
         i=0
 
         for f in files:
-        	print(f.name)
+        	#print(f.name)
         	#print(f.read())
 
         	encoded = base64.b64encode(f.read())
@@ -52,15 +54,26 @@ def uploader(request, url):
 	        headers = {'Content-type': 'application/json'}
 
 	        #print(data)
-	        response=requests.put("http://divaservices.unifr.ch/api/v2/collections/"+url, data=data, headers=headers)
+	        response=requests.put(diva+url, data=data, headers=headers)
 
-	        print(response)
+
+
+	        res = response.json()
+	        #print(response)
+	        #print(res)
+	        if 'errorType' in res:
+	            if res['errorType']=='ExistingFileError':
+	                print('AHA! FILE EXISTS ALREADY!')
+
 
 	        i = i+1
-	        if i==num:
-		        return HttpResponseRedirect("/collection/http://divaservices.unifr.ch/api/v2/collections/"+url)
 
-                
+	        if i==num:
+	            return HttpResponseRedirect("/collection/" + url)
+
+	        #return HttpResponseRedirect("/collection/" + url.strip("/"))
+
+
 
     images=Upload.objects.all()
 

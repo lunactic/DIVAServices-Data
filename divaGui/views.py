@@ -10,12 +10,13 @@ from django.views.generic import TemplateView
 from django import forms
 from django.http import HttpResponseRedirect
 
+from links.links import *
+
 import base64
 
 # Create your views here.
 
 # function based view
-
 
 def addcollection(request, url):
     name = ''
@@ -148,10 +149,11 @@ def collection(request, url):
 
 
 class ContactView(View):
-    def get(self, request, *args, **kwargs):
-        context = {}
-        return render(request, "contact.html", context)
+	def get(self, request, *args, **kwargs):
 
+		context = {}
+
+		return render(request, "contact.html", context)
 
 class DeleteCollectionView(View):
     def get(self, request, *args, **kwargs):
@@ -189,7 +191,6 @@ class CollectionsView(View):
             "collections": collections,
         }
         return render(request, "collections.html", context)
-
 
 ####################### TEMPLATE VIEWS #############################
 
