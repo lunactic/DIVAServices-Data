@@ -11,6 +11,7 @@ from django import forms
 from django.http import HttpResponseRedirect
 
 from links.links import *
+from time import sleep
 
 import base64
 
@@ -85,6 +86,7 @@ def addcollection(request, url):
 
             i = i + 1
             if i == num:
+                sleep(1)
                 return HttpResponseRedirect("/collection/"+name)
 
     context = {
