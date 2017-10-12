@@ -51,7 +51,21 @@ Selected collection page
 
 {% for element, filename in images %}
 
-<a href={{element}} target="_blank"><h5>{{forloop.counter}}. {{filename}} (Click to view) </h5></a>
+<div class="row">
+	<form method="post" enctype="multipart/form-data"> 
+		{% csrf_token %}
+		<input type='hidden' name='filename' value={{filename}}>
+		<input type='hidden' name='name' value={{name}}>
+		<div class="col-md-10">
+		<a href={{element}} target="_blank"><h5>{{forloop.counter}}. {{filename}} (Click to view) </h5></a> 
+		</div>
+		<div class="col-md-2">
+		<button type="submit" class="btn btn-primary" style="color:#fff; float: right; margin-bottom:10px;">
+			<strong>delete</strong>
+		</button>  
+		</div> 
+	</form>
+</div>
 <br/>
 <br/>
 
@@ -68,14 +82,14 @@ Selected collection page
 			<input type='hidden' name='filename' value={{filename}}>
 			<input type='hidden' name='name' value={{name}}>
 			<h4 class="text-center justify-center">
-				{{filename}}  
+				<label style="width:200px; text-overflow: ellipsis; overflow:hidden; white-space: nowrap;" title={{filename}}>{{filename}}  </label>
 				<button type="submit" class="btn btn-primary" style="color:#fff; float: right; margin-bottom:10px;">
 					<strong>delete</strong>
 				</button>   
 			</h4>
 		</form>
 		<a href={{element}} target="_blank" alt="alt testing" title={{filename}} style="border-style:1px solid black;">
-			<img  src={{element}} alt={{filename}} style="height:350px;width:350px;border-radius:15px;"></img>
+			<img  src={{element}} alt={{filename}} style="max-height:350px;max-width:350px;border-radius:15px;"></img>
 		</a>
 	</div>
 

@@ -8,7 +8,7 @@
 <br/>
 <h1>Method: {{methodName}}</h1>
 <br/>
-(<a href={{directLink}} target=_blank>direct link</a>)
+(<a href="http://divaservices.unifr.ch/api/v2/{{url}}/1/" target=_blank>direct link</a>)
 <br/><br/>
 
 
@@ -19,15 +19,18 @@
 {% endcomment %}
 
 <div class="row">
-	<div class="col-md-2">
-	{% for item in detailsKeys %}
-  		<h4>{{item}} :</h4>
-  	{% endfor %}
+	<div class="col-md-6" style="padding-right: 20px;">
+		{% for i, j in details %}
+	  		<h4 style="margin-bottom: 10px;" title={{j}}>{{i}} : {{j}}</h4>
+	  	{% endfor %}
 	</div>
-	<div class="col-md-10">
-	{% for item in detailsValues %}
-  		<h4>{{item}}</h4>
-  	{% endfor %}
+	<div class="col-md-6">
+		{% if not showFilesForm and not showCollectionsForm %}
+			<em>Input parameters:</em><br/>
+			<img src="https://pbs.twimg.com/profile_images/758384439021805568/xnnzxfF0_400x400.jpg" style="max-height:350px;max-width:350px;border-radius:15px;"></img>
+		{% else %}
+			<em>Dynamic input of parameters will generate here, after file selection</em>
+		{% endif %}
 	</div>
 </div>
 
@@ -37,8 +40,8 @@
   <input type='hidden' name='methodName' value={{methodName}}>
   <input type='hidden' name='applicationFlag' value=False>
   <label for="sel1">Select collection:</label>
-  <select class="form-control" id="sel1" name="sel1">
-  	<option label=" "> -- select a collection -- </option>
+  <select class="form-control" id="sel1" name="sel1" required>
+  	<option label="" value=""> -- select a collection -- </option>
   	{% for item in collections %}
   	<option>{{item.collection.name}}</option>
   	{% endfor %}
@@ -51,7 +54,7 @@
 </form>
 {% else %}
 <br/><br/>
-<h1>Collection: {{collectionName}}</h1>
+<h1>From collection: {{collectionName}}</h1>
 
 {% endif %}
 
@@ -63,7 +66,7 @@
   <input type='hidden' name='methodName' value={{methodName}}>
   <input type='hidden' name='applicationFlag' value=True>
   <label for="sel2">Select files:</label>
-  <select class="form-control ui fluid dropdown" id="sel2" name="sel2" multiple="">
+  <select class="form-control ui fluid dropdown" id="sel2" name="sel2" multiple="" required>
   	{% for item in imgNames %}
   	<option>{{item}}</option>
   	{% endfor %}
@@ -74,8 +77,50 @@
 
   <br/><br/><br/>
 
-  <button type="submit" class="btn btn-primary" value="selectFiles">Apply this method on these files</button>
+  <button type="submit" class="btn btn-primary" value="selectFiles">Apply this method on selected files</button>
 </form>
+{% endif %}
+
+{% if isXML %}
+<br/>
+
+{% for i,j in images %}
+
+<a href={{i}} target="_blank"><h5>{{forloop.counter}}. {{j}} (Click to view) </h5></a>
+
+<br/>
+
+{% endfor %}
+
+{% else %}
+
+	{% if not showFilesForm and not showCollectionsForm %}
+		<div class="row">
+		{% for i,j in images %}
+
+			<div class="col-md-4" style="padding-top: 10px;">
+				<form method="post" enctype="multipart/form-data"> 
+					{% csrf_token %}
+					<input type='hidden' name='filename' value={{j}}>
+					<input type='hidden' name='name' value={{name}}>
+					<h4 class="text-center justify-center">
+						<label style="width:200px;text-overflow: ellipsis; overflow:hidden; white-space: nowrap;" title={{j}}>{{j}}</label>
+					</h4>
+				</form>
+				<a href={{i}} target="_blank" alt="alt testing" title={{j}} style="border-style:1px solid black;">
+					<img  src={{i}} alt={{j}} style="max-height:350px;max-width:350px;border-radius:15px;"></img>
+				</a>
+			</div>
+
+
+		{% endfor %}
+		</div>
+	<h1 style="margin-top:40px;">Results:</h1>
+		<div class="row">
+		
+		</div>
+
+	{% endif %}
 {% endif %}
 
 <!--<div class="row" style="margin-top:60px;">

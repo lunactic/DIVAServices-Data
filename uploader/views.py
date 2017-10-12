@@ -59,8 +59,8 @@ def uploader(request, url):
 
 
 	        res = response.json()
-	        #print(response)
-	        #print(res)
+
+
 	        if 'errorType' in res:
 	            if res['errorType']=='ExistingFileError':
 	                print('AHA! FILE EXISTS ALREADY!')

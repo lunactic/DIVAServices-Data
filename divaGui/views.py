@@ -178,7 +178,7 @@ class CollectionView(View):
         	numberOfFiles = numberOfFiles + 1
         	temp = temp.split(".")
         	temp = temp[len(temp) - 1]
-        	if temp == "xml":
+        	if temp != "png" and temp != "jpeg" and temp != "jpg" and temp != "JPG" and temp != "JPEG" and temp !="PNG":
         		isXML = True
 
         imgNames = []
@@ -269,6 +269,10 @@ class MethodView(View):
     methodName = ""
     url = ""
     collectionName= ""
+    filenames = ""
+    isXML = False
+    imagesUrls = []
+    images = []
 
     def get(self, request, *args, **kwargs):
         url = self.kwargs['url']
@@ -278,6 +282,7 @@ class MethodView(View):
 
         MethodView.url = url
 
+        print(url)
 
         showCollectionsForm = True
         showFilesForm = False
@@ -308,12 +313,12 @@ class MethodView(View):
         for element in result['general'].values():
             detailsValues.append(element)
 
-        #print(detailsKeys)
+        details = zip(detailsKeys, detailsValues)
+        print(details)
         #print(detailsValues)
 
         context = {
-            "detailsKeys": detailsKeys,
-            "detailsValues": detailsValues,
+            "details": details,
             "methodName": result['general']['name'],
             "collections": collections,
             "showCollectionsForm": showCollectionsForm,
@@ -326,7 +331,7 @@ class MethodView(View):
         methodName = MethodView.methodName
         url = MethodView.url
         applicationFlag = self.request.POST.get("applicationFlag")
-        filename = self.request.POST.getlist("sel2")
+        filenames = self.request.POST.getlist("sel2")
         collectionName = self.request.POST.get("sel1")
 
         if(collectionName):
@@ -340,8 +345,10 @@ class MethodView(View):
 
         showCollectionsForm = False
 
-        images = []
+        imagesUrls = []
         imgNames = []
+
+        MethodView.isXML = False
         
         if applicationFlag=="False":
             showFilesForm = True
@@ -357,19 +364,6 @@ class MethodView(View):
             statusMessage = res['statusMessage']
             percentage = res['percentage']
 
-            isXML = False
-
-            for element in res['files']:
-                temp = element['file']['url']
-                images.append(temp)
-                numberOfFiles = numberOfFiles + 1
-                temp = temp.split(".")
-                temp = temp[len(temp) - 1]
-                if temp == "xml":
-                    isXML = True
-
-            
-
             for element in res['files']:
                 temp = element['file']['url']
                 temp = temp.split("/")
@@ -379,8 +373,28 @@ class MethodView(View):
             MethodView.imgNames = imgNames
         else:  #i have selected the collection and selected files from it
             showFilesForm = False
-            imgNames = MethodView.imgNames
-            print(filename)
+            MethodView.filenames = filenames
+            print(filenames)
+
+            res = requests.get(diva+collectionName)
+            res = res.json()
+
+            for element in res['files']:
+                temp = element['file']['url']
+                temp = temp.split("/")
+                if temp[6] in filenames:
+                    imagesUrls.append(element['file']['url'])
+                    temp = temp[6].split(".")
+                    temp = temp[len(temp) - 1]
+                    if temp != "png" and temp != "jpeg" and temp != "jpg" and temp != "JPG" and temp != "JPEG" and temp !="PNG":
+                        MethodView.isXML = True
+
+            MethodView.imagesUrls = imagesUrls
+            MethodView.images = zip(imagesUrls, filenames)
+
+
+            
+
             
 
         result = requests.get("http://divaservices.unifr.ch/api/v2/"+url+"/1")
@@ -398,18 +412,25 @@ class MethodView(View):
             detailsValues.append(element)
 
 
+        details = zip(detailsKeys, detailsValues)
+
+
+        print("details:")
+        print(details)
+
         payload = {'some': 'data'}
         headers = {'content-type': 'application/json'}
         #response = requests.delete(
         #    diva + name, data=json.dumps(payload), headers=headers)
         context = {
-            "detailsKeys": detailsKeys,
-            "detailsValues": detailsValues,
+            "details": details,
             "methodName": methodName,
             "showCollectionsForm": showCollectionsForm,
             "showFilesForm": showFilesForm,
             "collectionName": collectionName,
-            "imgNames": imgNames,
+            "imgNames": MethodView.imgNames,
+            "images": MethodView.images,
+            "isXML": MethodView.isXML,
         }
         return render(request, "method.html", context)
 
