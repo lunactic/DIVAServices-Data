@@ -1,10 +1,9 @@
 {% extends "divaTemplate.html" %}
 
-
+{% block head_title %}{{block.super}} - title {% endblock head_title %}
 
 
 {% block content %}
-
 
 <br/>
 <h1>heading: </h1>
@@ -12,7 +11,7 @@
 
 {% comment %}
 
-	comment
+	OVDE PISE STA RADIM NA STRANICI
 
 {% endcomment %}
 
@@ -21,7 +20,5 @@
 
 
 
-
-
-
 {% endblock content %}
+

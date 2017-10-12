@@ -234,6 +234,13 @@ class ContactView(View):
 
 		return render(request, "contact.html", context)
 
+class AboutView(View):
+    def get(self, request, *args, **kwargs):
+
+        context = {}
+
+        return render(request, "about.html", context)
+
 class DeleteCollectionView(View):
     def get(self, request, *args, **kwargs):
         context = {}
@@ -456,6 +463,16 @@ class CollectionsView(View):
             "collections": collections,
         }
         return render(request, "collections.html", context)
+
+    def post(self, request, *args, **kwargs):
+        name = self.request.POST.get("name")
+        # print(name)
+        payload = {'some': 'data'}
+        headers = {'content-type': 'application/json'}
+        response = requests.delete(
+            diva + name, data=json.dumps(payload), headers=headers)
+        context = {}
+        return HttpResponseRedirect("/collections/")
 
 ####################### TEMPLATE VIEWS #############################
 
