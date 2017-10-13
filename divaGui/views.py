@@ -161,8 +161,7 @@ class CollectionView(View):
         result = requests.get(url)
         result = result.json()
         name = url.split("/")
-        #name = name[6]
-        name = name[4]
+        name = name[-1]
         images = []
         numberOfFiles = 0
         statusCode = ''
@@ -186,10 +185,9 @@ class CollectionView(View):
         imgNames = []
 
         for element in result['files']:
-        	temp = element['file']['url']
+        	temp = element['file']['identifier']
         	temp = temp.split("/")
-        	imgNames.append(temp[6])
-        	#imgNames.append(temp[8])
+        	imgNames.append(temp[1])
 
         # KEEP IDENTATION!
         images = zip(images, imgNames)
