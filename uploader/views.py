@@ -1,14 +1,4 @@
-from django.shortcuts import render
-from uploader.models import UploadForm,Upload
-from django.http import HttpResponseRedirect
-from django.core.urlresolvers import reverse
-import requests
-import json
-import base64
-from links.links import *
-# Create your views here.
-
-
+from divaGui.viewImports import *
 
 def uploader(request, url):
 

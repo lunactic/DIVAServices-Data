@@ -20,10 +20,11 @@
 
 
 {% for item in collections %}
-	<form method="post" enctype="multipart/form-data"> 
+	<form id="my_form{{forloop.counter}}" method="post" enctype="multipart/form-data"> 
 		<h4>
 		<strong><a href='/collection/{{item.collection.name}}/'>{{item.collection.name}}</a></strong> (<small class="text-muted"> <em><a href="{{item.collection.url}}/" target="_blank">DirectURL</a> </em></small> )
-		<button type="submit" class="btn btn-primary" style="margin-left: 20px;">Delete</button>
+		<!--<button type="submit" class="btn btn-primary" style="margin-left: 20px;">Delete</button> -->
+		<small><a href="javascript:{}" onclick="document.getElementById('my_form{{forloop.counter}}').submit(); return false;">delete</a></small>
 		</h4> 
 		{% csrf_token %}
 		<input type="hidden" name="name" value="{{item.collection.name}}" type="form-text" class="form-control" id="deleteCollectionName">
