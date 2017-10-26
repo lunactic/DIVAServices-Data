@@ -273,10 +273,12 @@ class MethodView(View):
                 #print(resultingOutput)
                 #print("")
 
-                while not resultingOutput['output'][0]['file']['url']:
-                    print('waiting..')
+                #while not resultingOutput['output'][0]['file']['url']:
+                #    print('waiting..')
 
-                MethodView.resultingImages.append(resultingOutput['output'][0]['file']['url'])
+                print(resultingOutput)
+
+                #MethodView.resultingImages.append(resultingOutput['output'][0]['file']['url'])
 
             print(MethodView.resultingImages)
 
