@@ -18,4 +18,3 @@ class DeleteCollectionView(View):
 		context = {}
 
 		return HttpResponseRedirect("/collections/")
-

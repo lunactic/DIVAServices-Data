@@ -23,7 +23,7 @@ urlpatterns = [
     url(r'^admin/$', admin.site.urls),
     url(r'^$', CollectionsView.as_view()),
     url(r'^about/$', AboutView.as_view()),
-    url(r'^DeleteAdminAdmin/$', DeleteCollectionView.as_view()),
+    url(r'^AdminAdminDelete/$', DeleteCollectionView.as_view()),
     url(r'^practise/$', TryoutsTemplateView.as_view()),
     url(r'^addnewcollection/(?P<url>[\w\W]*)$', addcollection),
     url(r'^contact/$', ContactTemplateView.as_view()),

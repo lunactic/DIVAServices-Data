@@ -26,13 +26,13 @@
 	  	{% endfor %}
 	</div>
 	<div class="col-md-6">
-	{% if not showFilesForm and not showCollectionsForm %}
+	{% if not showFilesForm and not showCollectionsForm and not finalStep %}
 		{% csrf_token %}	
 				<input type='hidden' name='finalStep' value=True>
 				<!-- Selects -->
 				{% for element in selects %}
 					<h3>select value for {{element.select.name}}:</h3>
-					<select class="form-control ui fluid dropdown" id="select{{forloop.counter}}" name="select{{forloop.counter}}" required>
+					<select class="form-control ui fluid dropdown" id="select{{forloop.counter0}}" name="select{{forloop.counter0}}" required>
 					  	{% for item in element.select.options.values %}
 					  		{% if forloop.counter0 == element.select.options.default %}
 					  		<option selected="selected">{{item}}</option>
@@ -48,10 +48,16 @@
 				{% for element in numbers %}
 					<h3>{{element.number.name}} value: 
 					  <label id="rangeValLabel{{forloop.counter}}">{{element.number.options.default}}</label>
+					  <a href="javascript:void(0);" title="Click to view description"><span class="glyphicon glyphicon-info-sign" data-toggle="collapse" data-target="#demo{{forloop.counter}}"></span></a>
+
+					<div id="demo{{forloop.counter}}" class="collapse" style="margin: 10px 0;">
+						Description: &nbsp;<em>{{element.number.description}}</em>
+					</div>
+
 					</h3>
 					<div>
 					<a href="javascript:void(0);">
-					  <input type="range" min={{element.number.options.min}} max={{element.number.options.max}}  value={{element.number.options.default}} step={{element.number.options.steps}}   class="slider" id="myRange" 
+					  <input type="range" min={{element.number.options.min}} max={{element.number.options.max}}  value={{element.number.options.default}} step={{element.number.options.steps}}   class="slider" id="myRange{{forloop.counter0}}" name="myRange{{forloop.counter0}}"
 	        			oninput="document.getElementById('rangeValLabel{{forloop.counter}}').innerHTML = this.value;"
 	        			style="-webkit-appearance: none;
 					    width: 100%;
@@ -69,7 +75,7 @@
 				<!-- Highlighters -->
 				{% for element in highlighters %}
 					<h3>highlither setup</h3>
-					<select class="form-control ui fluid dropdown" id="highlighter{{forloop.counter}}" name="highlighter{{forloop.counter}}" required>
+					<select class="form-control ui fluid dropdown" id="highlighter{{forloop.counter0}}" name="highlighter{{forloop.counter0}}" required>
 				  		{% if element.highlighter.type == 'rectangle' %}
 				  		<option selected="selected">rectangle</option>
 				  		<option>polygon</option>
@@ -86,8 +92,76 @@
 				<!-- To Be Done Image -->
 				<!--<img src="https://pbs.twimg.com/profile_images/758384439021805568/xnnzxfF0_400x400.jpg" style="max-height:350px;max-width:350px;border-radius:15px;"></img> -->
 
-	{% endif %}		
+	{% endif %}	
+	{% if finalStep %}	
+		<div class="row">
+			<div class="col-xs-6">
+				<table class="table table-hover">
+				    <thead>
+				      <tr>
+				        <th>Name</th>
+				      </tr>
+				    </thead>
+				    <tbody>
+				      	{% for element in numbers %}
+				      	<tr>
+				      		<td> {{element.number.name}} </td>
+				      	</tr>
+						{% endfor %}
+						{% for element in selects %}
+						<tr>
+							<td>{{element.select.name}} </td>
+						</tr>
+						{% endfor %}
+				      </tr>
+				    </tbody>
+			  	</table>
+				
+			</div>
+			<div class="col-xs-6">
+				<table class="table table-hover">
+				    <thead>
+				      <tr>
+				        <th>Value</th>
+				      </tr>
+				    </thead>
+				    <tbody>
+				      	{% for element in selectedNumbers %}
+				      	<tr>
+				      		<td> {{element}} </td>
+				      	</tr>
+						{% endfor %}
+						{% for element in selectedSelects %}
+						<tr>
+							<td>{{element}} </td>
+						</tr>
+						{% endfor %}
+				      </tr>
+				    </tbody>
+			  	</table>
+			</div>
+		</div>
+		{% for element in selectedHighlighters %}
+		<div class="row">
+			<div class="col-xs-6">
+				<table class="table table-hover">
+				    <thead>
+				      <tr>
+				        <th>Hihglighter type</th>
+				      </tr>
+				    </thead>
+				    <tbody>
+				      	<tr>
+				      		<td> {{element}} </td>
+				      	</tr>
+				    </tbody>
+			  	</table>
+			</div>
+		</div>
+		{% endfor %}
+	{% endif %}
 	</div>
+	
 
 </div>
 {% if not showFilesForm and not showCollectionsForm and not finalStep %}
@@ -155,7 +229,6 @@
 
 	{% if not showFilesForm and not showCollectionsForm %}
 		<div class="row">
-
 		{% for i,j in images %}
 
 			<div class="col-md-4" style="padding-top: 10px;">
@@ -182,11 +255,21 @@
 		</div>
 		-->
 		{% if finalStep %}
-		<img src="https://pbs.twimg.com/profile_images/758384439021805568/xnnzxfF0_400x400.jpg" style="max-height:350px;max-width:350px;border-radius:15px;"></img>
+			<br/><br/>
+			<h1>Resulting images: </h1>
+			(<a href="{{responseToMethodApplication.results.0.resultLink}}" target=_blank>direct link</a>)
+			<br/>
+			{{resultingImages}}
+			{% for image in resultingImages %}
+				<a href={{image}} target="_blank" alt="alt testing" style="border-style:1px solid black;">
+					<img src="{{image}}" style="max-height:350px;max-width:350px;border-radius:15px;"></img>
+				</a>
+			{% endfor %}
 		{% endif %}
-
 	{% endif %}
 {% endif %}
+
+
 
 <!--<div class="row" style="margin-top:60px;">
 	<div class="col-md-6">

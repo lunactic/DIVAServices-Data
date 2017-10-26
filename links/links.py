@@ -1,4 +1,4 @@
-diva = "http://localhost:8080/collections/"
+diva = "http://divaservices.unifr.ch/api/v2/collections/"
 
 
 # real - "http://divaservices.unifr.ch/api/v2/collections/"

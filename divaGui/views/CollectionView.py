@@ -12,6 +12,7 @@ class CollectionView(View):
         statusCode = ''
         statusMessage = ''
         percentage = ''
+        print(result)
         statusCode = result['statusCode']
         statusMessage = result['statusMessage']
         percentage = result['percentage']
