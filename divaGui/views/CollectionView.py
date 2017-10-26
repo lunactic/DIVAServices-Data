@@ -5,14 +5,13 @@ class CollectionView(View):
         url = diva+self.kwargs['url']
         result = requests.get(url)
         result = result.json()
-        name = url.split("/")
-        name = name[-1]
+        name = self.kwargs['url'].split('/')
+        name = name[0]
         images = []
         numberOfFiles = 0
         statusCode = ''
         statusMessage = ''
         percentage = ''
-        print(result)
         statusCode = result['statusCode']
         statusMessage = result['statusMessage']
         percentage = result['percentage']

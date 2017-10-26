@@ -91,7 +91,7 @@ class MethodView(View):
         showFilesForm = False
 
 
-        imagesUrls = []
+        
         imgNames = []
         selects = []
         numbers = []
@@ -138,6 +138,7 @@ class MethodView(View):
             res = requests.get(diva+collectionName)
             res = res.json()
 
+            MethodView.imagesUrls = []
             for element in res['files']:
                 temp = element['file']['url']
                 temp = temp.split("/")
@@ -181,8 +182,12 @@ class MethodView(View):
             MethodView.selectedSelects = []
             MethodView.selectedNumbers = []
             MethodView.selectedHighlighters = []
+            MethodView.resultingImages = []
 
+            #YOU CAN ITERATE ONLY ONCE THROUGH A ZIP!
             MethodView.images = zip(MethodView.imagesUrls, MethodView.filenames)
+
+
             #print("---Selected Selects---")
             index = 0 
             for element in MethodView.selects:
@@ -208,8 +213,7 @@ class MethodView(View):
                 index = index + 1
 
             #now we finally have the parameter values and the images as well as the method name
-            #and we here implement the actual method calls to the server in order to get back our resulting images
-
+            #and we below implement the actual method calls to the server in order to get back our resulting images
 
 #           tempImages = []
 #           for i,j in MethodView.images:
@@ -219,7 +223,7 @@ class MethodView(View):
 
            # for image in tempImages:
 
-
+            
 
             data = {
                 "parameters":{},
@@ -238,29 +242,41 @@ class MethodView(View):
 
                 index = index + 1
 
-            data["data"][0] = {
-                "inputImage": "iamigor/original/111.png",
-            }
-
             #TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE
-
             #INPUT FOR HIGHLIGHTER WILL GO HERE INPUT FOR HIGHLIGHTER WILL GO HERE INPUT FOR HIGHLIGHTER WILL GO HERE  INPUT FOR HIGHLIGHTER WILL GO HERE  INPUT FOR HIGHLIGHTER WILL GO HERE 
+            
+            for element in MethodView.imagesUrls:
 
-            data = json.dumps(data)
-            #print(data)
-            headers = {'Content-type': 'application/json'}
-            responseToMethodApplication = requests.post("http://divaservices.unifr.ch/api/v2/"+url+"/1", data=data, headers=headers)
-            responseToMethodApplication = responseToMethodApplication.json()
-            MethodView.responseToMethodApplication = responseToMethodApplication
-            #print("")
-            #print(responseToMethodApplication["results"][0]["resultLink"])
-            responseToMethodApplication = requests.get(responseToMethodApplication["results"][0]["resultLink"])
-            responseToMethodApplication = responseToMethodApplication.json()
-            #print("")
-            #print(responseToMethodApplication)
-            #print("")
+                print(MethodView.imagesUrls)
 
-            MethodView.resultingImages.append(responseToMethodApplication['output'][0]['file']['url'])
+                tempName = element.split('/')
+                tempName = tempName[-1]
+
+                data["data"][0] = {
+                    "inputImage": collectionName + "/" + tempName,
+                }
+
+                dataSend = json.dumps(data)
+                #print("")
+                #print(dataSend)
+                #print("")
+                #print(url)
+                headers = {'Content-type': 'application/json'}
+                responseToMethodApplication = requests.post("http://divaservices.unifr.ch/api/v2/"+url+"/1", data=dataSend, headers=headers)
+                responseToMethodApplication = responseToMethodApplication.json()
+                MethodView.responseToMethodApplication = responseToMethodApplication
+                #print("")
+                #print(responseToMethodApplication)
+                resultingOutput = requests.get(responseToMethodApplication["results"][0]["resultLink"])
+                resultingOutput = resultingOutput.json()
+                #print("")
+                #print(resultingOutput)
+                #print("")
+
+                while not resultingOutput['output'][0]['file']['url']:
+                    print('waiting..')
+
+                MethodView.resultingImages.append(resultingOutput['output'][0]['file']['url'])
 
             print(MethodView.resultingImages)
 
@@ -304,7 +320,7 @@ class MethodView(View):
             "selectedHighlighters": MethodView.selectedHighlighters,
             "selectedSelects": MethodView.selectedSelects,
             "responseToMethodApplication": MethodView.responseToMethodApplication,
-            #"resultingImages": MethodView.resultingImages,
+            "resultingImages": MethodView.resultingImages,
             "imageUrls": MethodView.imageUrls,
         }
         return render(request, "method.html", context)

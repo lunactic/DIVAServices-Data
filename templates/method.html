@@ -189,7 +189,27 @@
 </form>
 {% else %}
 <br/><br/>
-<h1>From collection: {{collectionName}}</h1>
+<div class="row">
+	<div class="col-md-6">
+		<h1>From collection: {{collectionName}}</h1>
+	</div>
+	{% if finalStep %}
+	<div class="col-md-6">
+		<h1>Resulting images: 
+			<form action="javascript:void(0)">
+				<div class="input-group">
+					<input type="text" name="q" class="form-control" placeholder="Enter name for new collection.." style="height: 30px; width:300px;">
+			      
+			      <span class="input-group-btn">
+			      	<button class="btn btn-secondary hoverable" type="submit" style="height: 30px; background-color: #00CED1;"><strong>Create Collection</strong></button>
+			      </span>
+			      
+			 	</div>
+			</form>
+		</h1>
+	</div>
+	{% endif %}
+</div>
 
 {% endif %}
 
@@ -229,43 +249,59 @@
 
 	{% if not showFilesForm and not showCollectionsForm %}
 		<div class="row">
-		{% for i,j in images %}
+			{% if finalStep %}
+			<div class="col-md-6">
+			{% endif %}
+				{% for i,j in images %}
+					{% if finalStep %}
+					<div class="row">
+					{% endif %}
+						<div class="col-md-4" style="padding-top: 10px;">
+							<form method="post" enctype="multipart/form-data"> 
+								{% csrf_token %}
+								<input type='hidden' name='filename' value={{j}}>
+								<input type='hidden' name='name' value={{name}}>
+								<h4 class="text-center justify-center">
+									<label style="width:200px;text-overflow: ellipsis; overflow:hidden; white-space: nowrap;" title={{j}}>{{j}}</label>
+								</h4>
+							</form>
+							<a href={{i}} target="_blank" alt="alt testing" title={{j}} style="border-style:1px solid black;">
+								<img  src={{i}} alt={{j}} style="max-height:350px;max-width:350px;border-radius:15px;"></img>
+							</a>
+						</div>
+					{% if finalStep %}
+					</div>
+					{% endif %}
 
-			<div class="col-md-4" style="padding-top: 10px;">
-				<form method="post" enctype="multipart/form-data"> 
-					{% csrf_token %}
-					<input type='hidden' name='filename' value={{j}}>
-					<input type='hidden' name='name' value={{name}}>
-					<h4 class="text-center justify-center">
-						<label style="width:200px;text-overflow: ellipsis; overflow:hidden; white-space: nowrap;" title={{j}}>{{j}}</label>
-					</h4>
-				</form>
-				<a href={{i}} target="_blank" alt="alt testing" title={{j}} style="border-style:1px solid black;">
-					<img  src={{i}} alt={{j}} style="max-height:350px;max-width:350px;border-radius:15px;"></img>
-				</a>
+
+				{% endfor %}
+			{% if finalStep %}
 			</div>
-
-
-		{% endfor %}
+			{% endif %}	
+			<!--
+			<h1 style="margin-top:40px;">Results:</h1>
+			<div class="row">
+			
+			</div>
+			-->
+			<div class="col-md-6">	
+				{% if finalStep %}
+					<br/>
+					{% for image in resultingImages %}
+					<div class="row">
+						<div class="col-md-4" style="padding-top: 10px;">
+							<h4 class="text-center justify-center">
+								<label style="width:200px;text-overflow: ellipsis; overflow:hidden; white-space: nowrap;" title={{forloop.counter0}}>Result{{forloop.counter0}}</label>
+							</h4>
+							<a href={{image}} target="_blank" alt="alt testing" style="border-style:1px solid black;">
+								<img src="{{image}}" style="max-height:350px;max-width:350px;border-radius:15px;"></img>
+							</a>
+						</div>
+					</div>
+					{% endfor %}
+				{% endif %}
+			</div>
 		</div>
-		<!--
-		<h1 style="margin-top:40px;">Results:</h1>
-		<div class="row">
-		
-		</div>
-		-->
-		{% if finalStep %}
-			<br/><br/>
-			<h1>Resulting images: </h1>
-			(<a href="{{responseToMethodApplication.results.0.resultLink}}" target=_blank>direct link</a>)
-			<br/>
-			{{resultingImages}}
-			{% for image in resultingImages %}
-				<a href={{image}} target="_blank" alt="alt testing" style="border-style:1px solid black;">
-					<img src="{{image}}" style="max-height:350px;max-width:350px;border-radius:15px;"></img>
-				</a>
-			{% endfor %}
-		{% endif %}
 	{% endif %}
 {% endif %}
 
