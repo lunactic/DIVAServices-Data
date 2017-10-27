@@ -18,6 +18,8 @@ class MethodView(View):
     responseToMethodApplication = json.dumps({})
     resultingImages = []
     imageUrls = []
+    linksToResultingJson = []
+    resultingImagesZip = []
 
     def get(self, request, *args, **kwargs):
         url = self.kwargs['url']
@@ -57,8 +59,6 @@ class MethodView(View):
             detailsValues.append(element)
 
         details = zip(detailsKeys, detailsValues)
-
-        
 
         context = {
             "details": details,
@@ -103,10 +103,6 @@ class MethodView(View):
         inputParams = reqestMethodJson.json()
         MethodView.inputParams = inputParams
 
-
-
- 
-        
         if applicationFlag=="False" and finalStep!="True":
 
             showFilesForm = True
@@ -174,8 +170,7 @@ class MethodView(View):
             MethodView.highlighters = highlighters
 
         
-        if finalStep=="True": #apply method to selected images with set up input parameters and save images to 
-            #print("final step")
+        if finalStep=="True": #apply method to selected images with set up input parameters and save images to a collection
             showFilesForm = False
             showCollectionsForm = False
 
@@ -186,7 +181,6 @@ class MethodView(View):
 
             #YOU CAN ITERATE ONLY ONCE THROUGH A ZIP!
             MethodView.images = zip(MethodView.imagesUrls, MethodView.filenames)
-
 
             #print("---Selected Selects---")
             index = 0 
@@ -213,17 +207,7 @@ class MethodView(View):
                 index = index + 1
 
             #now we finally have the parameter values and the images as well as the method name
-            #and we below implement the actual method calls to the server in order to get back our resulting images
-
-#           tempImages = []
-#           for i,j in MethodView.images:
-#               tempImages.append(i)
-#
-#           print("images is final step: " + str(tempImages))
-
-           # for image in tempImages:
-
-            
+            #and we below implement the actual method calls to the server in order to get back our resulting images           
 
             data = {
                 "parameters":{},
@@ -243,11 +227,20 @@ class MethodView(View):
                 index = index + 1
 
             #TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE
-            #INPUT FOR HIGHLIGHTER WILL GO HERE INPUT FOR HIGHLIGHTER WILL GO HERE INPUT FOR HIGHLIGHTER WILL GO HERE  INPUT FOR HIGHLIGHTER WILL GO HERE  INPUT FOR HIGHLIGHTER WILL GO HERE 
+
+            #create input in case of highlighter
+
+            #check if files are visualizable, otherwise just give links to results
+
+            #create linking to result of each file individually rather than the whole group of them - check
+
+            #create multiple selects for multiple input
+
+            #enable collection creation from resulting files
+
+            MethodView.linksToResultingJson = []
             
             for element in MethodView.imagesUrls:
-
-                print(MethodView.imagesUrls)
 
                 tempName = element.split('/')
                 tempName = tempName[-1]
@@ -257,36 +250,59 @@ class MethodView(View):
                 }
 
                 dataSend = json.dumps(data)
-                #print("")
-                #print(dataSend)
-                #print("")
-                #print(url)
                 headers = {'Content-type': 'application/json'}
                 responseToMethodApplication = requests.post("http://divaservices.unifr.ch/api/v2/"+url+"/1", data=dataSend, headers=headers)
                 responseToMethodApplication = responseToMethodApplication.json()
                 MethodView.responseToMethodApplication = responseToMethodApplication
-                #print("")
-                #print(responseToMethodApplication)
-                resultingOutput = requests.get(responseToMethodApplication["results"][0]["resultLink"])
-                resultingOutput = resultingOutput.json()
-                #print("")
-                #print(resultingOutput)
-                #print("")
+                print("")
+                print("Response of method application call:")
+                print("")
+                print(responseToMethodApplication)
+                print("")
+                if 'status' in responseToMethodApplication:
+                    
+                    resultingOutput = requests.get(responseToMethodApplication["results"][0]["resultLink"])
+                    resultingOutput = resultingOutput.json()
+                    #print("")
+                    #print(resultingOutput)
+                    #print("")
 
-                #while not resultingOutput['output'][0]['file']['url']:
-                #    print('waiting..')
+                    while (resultingOutput['status'] == 'planned'):
+                        print('waiting on server..')
+                        resultingOutput = requests.get(responseToMethodApplication["results"][0]["resultLink"])
+                        resultingOutput = resultingOutput.json()
 
-                print(resultingOutput)
+                    print(resultingOutput)
 
-                #MethodView.resultingImages.append(resultingOutput['output'][0]['file']['url'])
+                    MethodView.linksToResultingJson.append(resultingOutput['resultLink'])
 
-            print(MethodView.resultingImages)
+                    for element in resultingOutput['output']:
+                        if element['file']['options']['visualization'] == True:
+                            MethodView.resultingImages.append(element['file']['url'])
+                        else :
+                            if element['file']['options']['type'] != "logfile":
+                                MethodView.resultingImages.append(element['file']['url'])
 
+                    MethodView.resultingImagesZip = zip(MethodView.resultingImages,MethodView.linksToResultingJson)
+
+                else: 
+                    if 'errorType' in responseToMethodApplication:
+
+                        print("")
+                        print("ERROR BRANCH LINE 298 IN METHODVIEW.PY - SOMETHING IS BAD IN THE SENDING REQUEST (FILE NUMBER ETC..)")
+                        print("")
+                        print(responseToMethodApplication)
+                        print("")
+
+                        MethodView.linksToResultingJson.append(responseToMethodApplication['message'])
+                        MethodView.resultingImages.append(responseToMethodApplication['message'])
+
+            #print(MethodView.resultingImages)
+
+        #print("http://divaservices.unifr.ch/api/v2/"+url+"/1")
 
         result = requests.get("http://divaservices.unifr.ch/api/v2/"+url+"/1")
         result = result.json()
-
-        #print("http://divaservices.unifr.ch/api/v2/"+url+"/1")
 
         detailsKeys = []
         detailsValues = []
@@ -301,8 +317,7 @@ class MethodView(View):
 
         payload = {'some': 'data'}
         headers = {'content-type': 'application/json'}
-        #response = requests.delete(
-        #    diva + name, data=json.dumps(payload), headers=headers)
+
         context = {
             "details": details,
             "methodName": methodName,
@@ -324,5 +339,7 @@ class MethodView(View):
             "responseToMethodApplication": MethodView.responseToMethodApplication,
             "resultingImages": MethodView.resultingImages,
             "imageUrls": MethodView.imageUrls,
+            "linksToResultingJson": MethodView.linksToResultingJson,
+            "resultingImagesZip": MethodView.resultingImagesZip,
         }
         return render(request, "method.html", context)

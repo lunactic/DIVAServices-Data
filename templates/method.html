@@ -99,7 +99,9 @@
 				<table class="table table-hover">
 				    <thead>
 				      <tr>
+				      	{% if numbers or selects %}
 				        <th>Name</th>
+				        {% endif %}
 				      </tr>
 				    </thead>
 				    <tbody>
@@ -122,7 +124,9 @@
 				<table class="table table-hover">
 				    <thead>
 				      <tr>
+				      	{% if numbers or selects %}
 				        <th>Value</th>
+				        {% endif %}
 				      </tr>
 				    </thead>
 				    <tbody>
@@ -195,18 +199,20 @@
 	</div>
 	{% if finalStep %}
 	<div class="col-md-6">
+		{% if resultingImagesZip %}
 		<h1>Resulting images: 
-			<form action="javascript:void(0)">
-				<div class="input-group">
-					<input type="text" name="q" class="form-control" placeholder="Enter name for new collection.." style="height: 30px; width:300px;">
+			<form action="javascript:void(0)" >
+				<div class="input-group" style="margin-top:10px;">
+					<input type="text" name="" class="form-control" placeholder="Enter name for new collection.." style="height: 30px; width:300px;" required>
 			      
 			      <span class="input-group-btn">
-			      	<button class="btn btn-secondary hoverable" type="submit" style="height: 30px; background-color: #00CED1;"><strong>Create Collection</strong></button>
+			      	<button class="btn btn-secondary hoverable" type="submit" style="height: 30px; background-color: #00CED1;"><strong>Create Collection With Results</strong></button>
 			      </span>
 			      
 			 	</div>
 			</form>
 		</h1>
+		{% endif %}
 	</div>
 	{% endif %}
 </div>
@@ -287,11 +293,12 @@
 			<div class="col-md-6">	
 				{% if finalStep %}
 					<br/>
-					{% for image in resultingImages %}
+					{% for image, url in resultingImagesZip %}
 					<div class="row">
 						<div class="col-md-4" style="padding-top: 10px;">
 							<h4 class="text-center justify-center">
-								<label style="width:200px;text-overflow: ellipsis; overflow:hidden; white-space: nowrap;" title={{forloop.counter0}}>Result{{forloop.counter0}}</label>
+								<label style="width:200px;text-overflow: ellipsis; overflow:hidden; white-space: nowrap;" title={{forloop.counter0}}>Result{{forloop.counter0}}<small><a href={{url}} target="_blank"> (directLink)</a></small></label>
+								
 							</h4>
 							<a href={{image}} target="_blank" alt="alt testing" style="border-style:1px solid black;">
 								<img src="{{image}}" style="max-height:350px;max-width:350px;border-radius:15px;"></img>
