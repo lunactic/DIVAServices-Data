@@ -7,6 +7,7 @@ class MethodView(View):
     filenames = []
     isXML = False
     imagesUrls = []
+    imgNames = []
     images = []
     selects = []
     numbers = []
@@ -24,7 +25,17 @@ class MethodView(View):
     detailsValues = []
     details = []
     resultingFileNames = []
-    fileFolderInputDetails = {}
+    filesInputDetails = []
+    foldersInputDetails = []
+    filesInputDetailsName = []
+    foldersInputDetailsName = []
+    filesInputDetailsDescription = []
+    foldersInputDetailsDescription = []
+    fileCollectionNames = []
+    folderCollectionNames = []
+
+    Temp = []
+
 
     def get(self, request, *args, **kwargs):
         url = self.kwargs['url']
@@ -54,16 +65,37 @@ class MethodView(View):
 
         MethodView.methodName = result['general']['name']
 
+        MethodView.detailsKeys = []
         for element in result['general'].keys():
             MethodView.detailsKeys.append(element)
 
+        MethodView.detailsValues = []
         for element in result['general'].values():
             MethodView.detailsValues.append(element)
 
         MethodView.details = zip(MethodView.detailsKeys, MethodView.detailsValues)
 
+
+        MethodView.filesInputDetailsName = []
+        MethodView.filesInputDetailsDescription = []
+        MethodView.foldersInputDetailsName = []
+        MethodView.foldersInputDetailsDescription = []
+        for element in result['input']:
+            if 'file' in element and element['file']['userdefined']==True:
+                MethodView.filesInputDetailsName.append(element['file']['name'])
+                MethodView.filesInputDetailsDescription.append(element['file']['description'])
+                MethodView.filesInputDetails = zip(MethodView.filesInputDetailsName,MethodView.filesInputDetailsDescription)
+            if 'folder' in element and element['folder']['userdefined']==True:
+                MethodView.foldersInputDetailsName.append(element['folder']['name'])
+                MethodView.foldersInputDetailsDescription.append(element['folder']['description'])
+                MethodView.foldersInputDetails = zip(MethodView.foldersInputDetailsName,MethodView.foldersInputDetailsDescription)
+
         context = {
             "details": MethodView.details,
+            "filesInputDetails": MethodView.filesInputDetails,
+            "foldersInputDetails": MethodView.foldersInputDetails,
+            "filesInputDetailsName": MethodView.filesInputDetailsName,
+            "foldersInputDetailsName": MethodView.foldersInputDetailsName,
             "methodName": result['general']['name'],
             "collections": collections,
             "showCollectionsForm": showCollectionsForm,
@@ -75,25 +107,34 @@ class MethodView(View):
     def post(self, request, *args, **kwargs):
         url = MethodView.url
         applicationFlag = self.request.POST.get("applicationFlag")
-        filenames = self.request.POST.getlist("sel2")
-        collectionName = self.request.POST.get("sel1")
+
+
+        MethodView.filenames = self.request.POST.getlist("fileNames")
+
+        i = 0
+        MethodView.fileCollectionNames = []
+        for item in MethodView.filesInputDetailsName:
+            MethodView.fileCollectionNames.append(self.request.POST.get("fileCollection"+str(i)))
+            i = i + 1
+
+        i = 0
+        MethodView.folderCollectionNames = []
+        for item in MethodView.foldersInputDetailsName:
+            MethodView.folderCollectionNames.append(self.request.POST.get("folerCollection"+str(i)))
+            i = i + 1
+
+
         finalStep = self.request.POST.get("finalStep")
         makeCollection = self.request.POST.get("makeCollection")
         newCollectionName = self.request.POST.get("newCollectionName")
         
         MethodView.images = MethodView.images
 
-        if(collectionName):
-            MethodView.collectionName = collectionName
-        else:
-            collectionName = MethodView.collectionName
-
         showCollectionsForm = False
         showFilesForm = False
-
-
         
-        imgNames = []
+
+
         selects = []
         numbers = []
         highlighters = []
@@ -106,55 +147,49 @@ class MethodView(View):
 
         if applicationFlag=="False" and finalStep!="True":
 
+            #get names for files in each selected collection
+            for name in MethodView.fileCollectionNames:
+                
+                res = requests.get(diva+name)
+                res = res.json()
+
+                imgNames = []
+                for element in res['files']:
+                    temp = element['file']['identifier']
+                    temp = temp.split("/")
+                    imgNames.append(temp[1])
+
+                MethodView.imgNames.append(imgNames)
+
+            MethodView.Temp = zip(MethodView.fileCollectionNames, MethodView.imgNames)
             showFilesForm = True
-            res = requests.get(diva+collectionName)
-            res = res.json()
 
-            
-            numberOfFiles = 0
-            statusCode = ''
-            statusMessage = ''
-            percentage = ''
-            statusCode = res['statusCode']
-            statusMessage = res['statusMessage']
-            percentage = res['percentage']
-
-            for element in res['files']:
-                temp = element['file']['identifier']
-                temp = temp.split("/")
-                imgNames.append(temp[1])
-
-            MethodView.imgNames = imgNames
-            #print('prvipost')
-
-        if applicationFlag=="True" and finalStep!="True":  #i have selected the collection and selected files from it
+        #By now we have selected the input collections and folders and selected files from the collectons
+        if applicationFlag=="True" and finalStep!="True":  
             showFilesForm = False
-            MethodView.filenames = filenames
-            #print(filenames)
 
-            res = requests.get(diva+collectionName)
-            res = res.json()
+            for name in MethodView.fileCollectionNames:
 
-            MethodView.imagesUrls = []
-            for element in res['files']:
-                temp = element['file']['url']
-                temp = temp.split("/")
-                if temp[-1] in filenames:
-                    MethodView.imagesUrls.append(element['file']['url'])
-                    temp = temp[-1].split(".")
-                    temp = temp[len(temp) - 1]
-                    if temp != "png" and temp != "jpeg" and temp != "jpg" and temp != "JPG" and temp != "JPEG" and temp !="PNG":
-                        MethodView.isXML = True
+                res = requests.get(diva+collectionName)
+                res = res.json()
 
-            #print("step before final: ")
-            MethodView.filenames = filenames
+                MethodView.imagesUrls = []
+                for element in res['files']:
+                    temp = element['file']['url']
+                    temp = temp.split("/")
+                    if temp[-1] in filenames:
+                        MethodView.imagesUrls.append(element['file']['url'])
+                        temp = temp[-1].split(".")
+                        temp = temp[len(temp) - 1]
+                        if temp != "png" and temp != "jpeg" and temp != "jpg" and temp != "JPG" and temp != "JPEG" and temp !="PNG":
+                            MethodView.isXML = True
 
-            MethodView.images = zip(MethodView.imagesUrls, filenames)
+                MethodView.images = zip(MethodView.imagesUrls, filenames)
 
-            reqestMethodJson = requests.get("http://divaservices.unifr.ch/api/v2/"+url+"/1")
-            inputParams = reqestMethodJson.json()
+                reqestMethodJson = requests.get("http://divaservices.unifr.ch/api/v2/"+url+"/1")
+                inputParams = reqestMethodJson.json()
 
-            
+            #initialize backend input parameters
             for element in inputParams['input']:
                 if 'select' in element:
                     selects.append(element)
@@ -162,14 +197,11 @@ class MethodView(View):
                     numbers.append(element)
                 if 'highlighter' in element:
                     highlighters.append(element)
-                    #print(highlighters[0])
 
-            #print('drugipost')
             MethodView.inputParams = inputParams
             MethodView.selects = selects
             MethodView.numbers = numbers
             MethodView.highlighters = highlighters
-
         
         if finalStep=="True": #apply method to selected images with set up input parameters and save images to a collection
             showFilesForm = False
@@ -393,7 +425,6 @@ class MethodView(View):
             "methodName": MethodView.methodName,
             "showCollectionsForm": showCollectionsForm,
             "showFilesForm": showFilesForm,
-            "collectionName": collectionName,
             "imgNames": MethodView.imgNames,
             "images": MethodView.images,
             "isXML": MethodView.isXML,
@@ -411,5 +442,8 @@ class MethodView(View):
             "imageUrls": MethodView.imageUrls,
             "linksToResultingJson": MethodView.linksToResultingJson,
             "resultingImagesZip": MethodView.resultingImagesZip,
+            "fileCollectionNames": MethodView.fileCollectionNames,
+            "folderCollectionNames": MethodView.folderCollectionNames,
+            "temp": MethodView.Temp,
         }
         return render(request, "method.html", context)

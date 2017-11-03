@@ -24,7 +24,42 @@
 		{% for i, j in details %}
 	  		<h4 style="margin-bottom: 10px;" title={{j}}>{{i}} : {{j}}</h4>
 	  	{% endfor %}
-	  	
+	  	{% for name, details in filesInputDetails %}
+	  		{% if forloop.counter0 == 0 %}
+		  		<h3 style="margin-bottom: 20px;margin-top: 20px;">
+		  			<strong>File input details
+			  		<a href="javascript:void(0);" title="Click to view description">
+			  		<span 
+			  			class="glyphicon glyphicon-info-sign" 
+			  			data-toggle="collapse" data-target="#collapseFileInputMessage">
+			  		</span>
+			  		</a>
+			  		&nbsp:</strong>
+		  		</h3>
+		  		<div id="collapseFileInputMessage" class="collapse" style="margin: 10px 0;">
+				<em>The input description needs to be closely followed in order for the method to work correctly.</em>
+				</div>
+		  	{% endif %}
+	  		<h4 style="margin-bottom: 10px;" >{{name}} : {{details}}</h4>
+	  	{% endfor %}
+	  	{% for name, details in foldersInputDetails %}
+	  		{% if forloop.counter0 == 0 %}
+	  			<h3 style="margin-bottom: 20px;margin-top: 20px;">
+		  			<strong>Folder input details
+			  		<a href="javascript:void(0);" title="Click to view description">
+			  		<span 
+			  			class="glyphicon glyphicon-info-sign" 
+			  			data-toggle="collapse" data-target="#collapseFileInputMessage">
+			  		</span>
+			  		</a>
+			  		&nbsp:</strong>
+		  		</h3>
+		  		<div id="collapseFileInputMessage" class="collapse" style="margin: 10px 0;">
+				<em>The input description needs to be closely followed in order for the method to work correctly.</em>
+				</div>
+	  		{% endif %}
+	  		<h4 style="margin-bottom: 10px;" >{{name}} : {{details}}</h4>
+	  	{% endfor %}
 	</div>
 	<div class="col-md-6">
 	{% if not showFilesForm and not showCollectionsForm and not finalStep %}
@@ -175,23 +210,40 @@
 </form>
 
 {% if showCollectionsForm %}
+<div style="width: 400px;">
 <form method="post" enctype="multipart/form-data" style="margin-top:60px;">
   <input type='hidden' name='url' value={{url}}>
   <input type='hidden' name='methodName' value={{methodName}}>
   <input type='hidden' name='applicationFlag' value=False>
-  <label for="sel1">Select collection:</label>
-  <select class="form-control" id="sel1" name="sel1" required>
-  	<option label="" value=""> -- select a collection -- </option>
+
+  {% for element in filesInputDetailsName %}
+  <label for="fileCollection{{forloop.counter0}}">Select collection for {{element}} file:</label>
+  <select class="form-control" id="fileCollection{{forloop.counter0}}" name="fileCollection{{forloop.counter0}}" required>
+  	<option label="" value=""> -- </option>
   	{% for item in collections %}
   	<option>{{item.collection.name}}</option>
   	{% endfor %}
   	{% csrf_token %} 
   </select>
+  {% endfor %}
+
+  {% for element in foldersInputDetailsName %}
+  <label for="folderCollection{{forloop.counter0}}">Select collection for {{element}} folder:</label>
+  <select class="form-control" id="folderCollection{{forloop.counter0}}" name="folderCollection{{forloop.counter0}}" required>
+  	<option label="" value=""> -- </option>
+  	{% for item in collections %}
+  	<option>{{item.collection.name}}</option>
+  	{% endfor %}
+  	{% csrf_token %} 
+  </select>
+  {% endfor %}
+
 
   <br/><br/><br/>
 
   <button type="submit" class="btn btn-primary" value="select">Select Collection</button>
 </form>
+</div>
 {% else %}
 <br/><br/>
 <div class="row">
@@ -229,13 +281,18 @@
   <input type='hidden' name='sel1' value={{name}}>
   <input type='hidden' name='methodName' value={{methodName}}>
   <input type='hidden' name='applicationFlag' value=True>
-  <label for="sel2">Select files:</label>
-  <select class="form-control ui fluid dropdown" id="sel2" name="sel2" multiple="" required>
+
+{% for colName, imgNames in temp %}
+  <label for="fileNames{{forloop.counter0}}">Select files from {{colName}}:</label>
+  <select class="form-control ui fluid dropdown" id="fileNames{{forloop.counter0}}" name="fileNames{{forloop.counter0}}" multiple="" required>
   	{% for item in imgNames %}
   	<option>{{item}}</option>
   	{% endfor %}
   	{% csrf_token %} 
   </select>
+{% endfor %}
+
+
 
   <br/><br/><br/>
 
