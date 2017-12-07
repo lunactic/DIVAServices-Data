@@ -15,6 +15,7 @@ from divaGui.views.MethodView import MethodView
 from divaGui.views.MethodsView import MethodsView
 from divaGui.views.Tryouts import  TryoutsTemplateView
 from divaGui.views.DeleteCollectionView import DeleteCollectionView
+from divaGui.views.HighlighterView import HighlighterView
 
 
 
@@ -31,5 +32,6 @@ urlpatterns = [
     url(r'^methods/(?P<something>[\w\W]*)$', MethodsView.as_view()),
     url(r'^method/(?P<url>[\w\W]*)$', MethodView.as_view()),
     url(r'^collection/(?P<url>[\w\W]*)$', CollectionView.as_view()),
+    url(r'^highlighter/(?P<url>[\w\W]*)$', HighlighterView.as_view()),
     url(r'^uploader/(?P<url>[\w\W]*)$', uploader, name='imageupload'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

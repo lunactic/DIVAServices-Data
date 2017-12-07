@@ -1,0 +1,133 @@
+{% extends "divaTemplate.html" %}
+
+{% block head_title %}{{block.super}} - highlighter {% endblock head_title %}
+
+
+{% block content %}
+
+<br/>
+<h1>Highlighter coordinates page:  </h1>
+<br/>
+
+{% comment %}
+
+	OVDE PISE STA RADIM NA STRANICI
+
+{% endcomment %}
+
+<!--
+
+
+<form method="post" enctype="multipart/form-data"> 
+{% csrf_token %} 
+<img  src="http://divaservices.unifr.ch/api/v2/files/testingaftercoffee/original/111.png" style="max-height:500px;max-width:500px;border-radius:0px;"></img>
+
+
+<button type="submit" class="btn btn-primary" value="applyMethod" style="margin-top:20px;">Set coordinates</button>
+
+</form>
+
+<!-- -------------------------------------------------------------------------------------------------------------------------- -->
+
+	<div id="image" style="
+			width: 500px;
+            height: 700px;
+            border: solid 1px black;
+            cursor: pointer;
+            position: relative;
+            z-index: 1;">
+
+            <div style="
+				position: absolute;
+			    z-index: 0;
+			    top: 0;
+			    bottom: 0;
+			    left: 0;
+			    right: 0;
+			    background: url({{file.url}});
+			    background-size:     contain;                   
+			    background-repeat:   no-repeat;
+			    background-position: left top;
+			    background-color: grey;
+			    opacity: 1;">
+			</div>
+    </div>
+	<div id="rect" style="
+			z-index: 1 ;
+			border: solid 2px red;
+            pointer-events: none;
+            display: none;">
+            
+    </div>	
+	<div id="bounds">
+		
+	</div>
+	<script>
+		function func() {
+
+			document.body.scroll = "no";
+			document.body.style.overflow = 'hidden';
+			document.height = window.innerHeight;
+
+
+	        var div = document.getElementById('image');
+	        div.addEventListener('mousedown', mousedown);
+	        div.addEventListener('mouseup', mouseup);
+	        div.addEventListener('mousemove', mousemove);
+
+	        var grab = false;
+	        var rect = {
+	            x0: 0,
+	            y0: 0,
+	            x1: 0,
+	            y1: 0
+	        };
+
+	        function mousedown(e) {
+	            grab = true;
+	            rect.x0 = e.clientX;
+	            rect.y0 = e.clientY;
+
+	        }
+
+	        function mousemove(e) {
+	            if (grab) {
+	                rect.x1 = e.clientX;
+	                rect.y1 = e.clientY;
+	                showRect();
+	            }
+	        }
+
+	        function mouseup(e) {
+	            grab = false;
+
+
+	        }
+
+	        function showRect() {
+	            var rectDiv = document.getElementById('rect');
+	            rectDiv.style.display = 'block';
+	            rectDiv.style.position = 'absolute';
+	            rectDiv.style.left = rect.x0 + 'px';
+	            rectDiv.style.top = rect.y0 + 'px';
+	            rectDiv.style.width = (rect.x1 - rect.x0) + 'px';
+	            rectDiv.style.height = (rect.y1 - rect.y0) + 'px';
+
+	            var boundsDiv = document.getElementById('bounds');
+	            var x0 = rect.x0 - ($('#image').offset().left - $(window).scrollLeft())
+	            var y0 = rect.y0 - ($('#image').offset().top - $(window).scrollTop())
+	            var x1 = rect.x1 - ($('#image').offset().left - $(window).scrollLeft())
+	            var y1 = rect.y1 - ($('#image').offset().top - $(window).scrollTop())
+	            boundsDiv.innerText = 'crop rect: ' + x0 + ',' + y0 + ' to ' + x1 + ',' + y1;
+	        }
+
+	    }
+
+	    $(window).scroll(function() {
+		    scroll(0,0);
+		});
+
+	    window.onload = func;
+	</script>
+
+{% endblock content %}

@@ -1,5 +1,9 @@
 from divaGui.viewImports import *
 
+from PIL import Image
+
+from io import BytesIO
+
 class MethodView(View):
     methodName = ""
     url = ""
@@ -7,6 +11,7 @@ class MethodView(View):
     filenames = []
     isXML = False
     imagesUrls = []
+    imgNames = []
     images = []
     selects = []
     numbers = []
@@ -24,7 +29,28 @@ class MethodView(View):
     detailsValues = []
     details = []
     resultingFileNames = []
-    fileFolderInputDetails = {}
+    filesInputDetails = []
+    foldersInputDetails = []
+    filesInputDetailsName = []
+    foldersInputDetailsName = []
+    filesInputDetailsDescription = []
+    foldersInputDetailsDescription = []
+    fileCollectionNames = []
+    folderCollectionNames = []
+
+    colectionsFilesNames = []
+
+    imageFileNames = []
+
+    selectedInputJson = {}
+
+    singleFileCollectionInput = True
+    singleFolderCollectionInput = True
+    folderInput = False
+    fileInput = False
+
+    highlightersExist = False
+    multipleInput = False
 
     def get(self, request, *args, **kwargs):
         url = self.kwargs['url']
@@ -52,18 +78,60 @@ class MethodView(View):
         result = requests.get("http://divaservices.unifr.ch/api/v2/"+url+"/1")
         result = result.json()
 
-        MethodView.methodName = result['general']['name']
 
+        if(MethodView.methodName == ""):
+            MethodView.methodName = result['general']['name']
+
+        MethodView.detailsKeys = []
         for element in result['general'].keys():
             MethodView.detailsKeys.append(element)
 
+        MethodView.detailsValues = []
         for element in result['general'].values():
             MethodView.detailsValues.append(element)
 
         MethodView.details = zip(MethodView.detailsKeys, MethodView.detailsValues)
 
+        MethodView.singleFileCollectionInput = True
+        MethodView.singleFolderCollectionInput = True
+        MethodView.folderInput = False
+        MethodView.highlightersExist = False
+        MethodView.multipleInput = False
+
+        MethodView.fileCollectionNames = []
+        MethodView.folderCollectionNames = []
+        MethodView.filesInputDetailsName = []
+        MethodView.filesInputDetailsDescription = []
+        MethodView.foldersInputDetailsName = []
+        MethodView.foldersInputDetailsDescription = []
+
+        for element in result['input']:
+            if 'file' in element and element['file']['userdefined']==True:
+                MethodView.filesInputDetailsName.append(element['file']['name'])
+                MethodView.filesInputDetailsDescription.append(element['file']['description'])
+                MethodView.filesInputDetails = zip(MethodView.filesInputDetailsName,MethodView.filesInputDetailsDescription)
+                
+                MethodView.fileInput = True
+
+            if 'folder' in element and element['folder']['userdefined']==True:
+                MethodView.foldersInputDetailsName.append(element['folder']['name'])
+                MethodView.foldersInputDetailsDescription.append(element['folder']['description'])
+                MethodView.foldersInputDetails = zip(MethodView.foldersInputDetailsName,MethodView.foldersInputDetailsDescription)
+
+                MethodView.folderInput = True
+
+        if len(MethodView.filesInputDetailsName) > 1 :
+            MethodView.singleFileCollectionInput = False
+
+        if len(MethodView.foldersInputDetailsName) > 1 :
+            MethodView.singleFolderCollectionInput = False
+
         context = {
             "details": MethodView.details,
+            "filesInputDetails": MethodView.filesInputDetails,
+            "foldersInputDetails": MethodView.foldersInputDetails,
+            "filesInputDetailsName": MethodView.filesInputDetailsName,
+            "foldersInputDetailsName": MethodView.foldersInputDetailsName,
             "methodName": result['general']['name'],
             "collections": collections,
             "showCollectionsForm": showCollectionsForm,
@@ -75,28 +143,55 @@ class MethodView(View):
     def post(self, request, *args, **kwargs):
         url = MethodView.url
         applicationFlag = self.request.POST.get("applicationFlag")
-        filenames = self.request.POST.getlist("sel2")
-        collectionName = self.request.POST.get("sel1")
+
+        x0 = self.request.POST.get("x0")
+        y0 = self.request.POST.get("y0")
+        x1 = self.request.POST.get("x1")
+        y1 = self.request.POST.get("y1")
+
+        MethodView.methodName = self.request.POST.get("methodName")
+
+        if(len(MethodView.fileCollectionNames)==0):
+            i = 0
+            MethodView.fileCollectionNames = []
+            for item in MethodView.filesInputDetailsName:
+                MethodView.fileCollectionNames.append(self.request.POST.get("fileCollection"+str(i)))
+                i = i + 1
+
+        if(len(MethodView.folderCollectionNames)==0):
+            i = 0
+            MethodView.folderCollectionNames = []
+            for item in MethodView.foldersInputDetailsName:
+                MethodView.folderCollectionNames.append(self.request.POST.get("folderCollection"+str(i)))
+                i = i + 1
+
+
         finalStep = self.request.POST.get("finalStep")
         makeCollection = self.request.POST.get("makeCollection")
         newCollectionName = self.request.POST.get("newCollectionName")
         
         MethodView.images = MethodView.images
-
-        if(collectionName):
-            MethodView.collectionName = collectionName
-        else:
-            collectionName = MethodView.collectionName
+        
+        selects = []
+        numbers = []
+        highlighters = []
 
         showCollectionsForm = False
         showFilesForm = False
 
+        if len(MethodView.highlighters) > 0 :
+            MethodView.highlightersExist = True
 
-        
-        imgNames = []
-        selects = []
-        numbers = []
-        highlighters = []
+        if len(MethodView.fileCollectionNames) > 1 or len(MethodView.folderCollectionNames) > 0:
+            MethodView.multipleInput = True
+
+
+        print(MethodView.multipleInput)
+        print(MethodView.fileCollectionNames)
+        print(MethodView.highlightersExist)
+        print(MethodView.highlighters)
+
+
 
         MethodView.isXML = False
 
@@ -104,57 +199,75 @@ class MethodView(View):
         inputParams = reqestMethodJson.json()
         MethodView.inputParams = inputParams
 
+        MethodView.colectionsFilesNames = []
+
+        #overstep directly to step before application if there are no Collections for file input
+        if((not MethodView.fileInput) and MethodView.folderInput):
+            applicationFlag="True"
+
         if applicationFlag=="False" and finalStep!="True":
 
+            #get names for files in each selected collection
+            MethodView.imgNames = []
+            for name in MethodView.fileCollectionNames:
+                
+                res = requests.get(diva+name)
+                res = res.json()
+
+                imgNames = []
+                for element in res['files']:
+                    temp = element['file']['identifier']
+                    temp = temp.split("/")
+                    imgNames.append(temp[1])
+
+                MethodView.imgNames.append(imgNames)
+
+            MethodView.colectionsFilesNames = zip(MethodView.fileCollectionNames, MethodView.imgNames)
             showFilesForm = True
-            res = requests.get(diva+collectionName)
-            res = res.json()
 
-            
-            numberOfFiles = 0
-            statusCode = ''
-            statusMessage = ''
-            percentage = ''
-            statusCode = res['statusCode']
-            statusMessage = res['statusMessage']
-            percentage = res['percentage']
-
-            for element in res['files']:
-                temp = element['file']['identifier']
-                temp = temp.split("/")
-                imgNames.append(temp[1])
-
-            MethodView.imgNames = imgNames
-            #print('prvipost')
-
-        if applicationFlag=="True" and finalStep!="True":  #i have selected the collection and selected files from it
+        #By now we have selected the input collections and folders and selected files from the collectons
+        if applicationFlag=="True" and finalStep!="True":  
             showFilesForm = False
-            MethodView.filenames = filenames
-            #print(filenames)
 
-            res = requests.get(diva+collectionName)
-            res = res.json()
+            data = { "collections": [] }
 
+            i = 0
+            MethodView.imageFileNames = []
             MethodView.imagesUrls = []
-            for element in res['files']:
-                temp = element['file']['url']
-                temp = temp.split("/")
-                if temp[-1] in filenames:
-                    MethodView.imagesUrls.append(element['file']['url'])
-                    temp = temp[-1].split(".")
-                    temp = temp[len(temp) - 1]
-                    if temp != "png" and temp != "jpeg" and temp != "jpg" and temp != "JPG" and temp != "JPEG" and temp !="PNG":
-                        MethodView.isXML = True
+            for name in MethodView.fileCollectionNames:
 
-            #print("step before final: ")
-            MethodView.filenames = filenames
+                data["collections"].append({"name": name, "files": []})
 
-            MethodView.images = zip(MethodView.imagesUrls, filenames)
+                res = requests.get(diva+name)
+                res = res.json()
+
+                filenames = self.request.POST.getlist("fileNames"+str(i))
+
+                imageUrlsTemp = []
+                for element in res['files']:
+                    temp = element['file']['url']
+                    temp = temp.split("/")
+                    if temp[-1] in filenames:
+                        imageUrlsTemp.append(element['file']['url'])
+                        data["collections"][i]["files"].append({ "url": element['file']['url'], "filename": temp[-1]})
+                        temp = temp[-1].split(".")
+                        temp = temp[len(temp) - 1]
+                        if temp != "png" and temp != "jpeg" and temp != "jpg" and temp != "JPG" and temp != "JPEG" and temp !="PNG":
+                            MethodView.isXML = True
+
+                MethodView.imageFileNames.append(filenames)
+                MethodView.imagesUrls.append(imageUrlsTemp)
+
+                i = i + 1
+
+            MethodView.selectedInputJson = data
+
+            #print(MethodView.selectedInputJson)
 
             reqestMethodJson = requests.get("http://divaservices.unifr.ch/api/v2/"+url+"/1")
-            inputParams = reqestMethodJson.json()
+            inputParams = reqestMethodJson.json()   
 
-            
+            #initialize backend input parameters
             for element in inputParams['input']:
                 if 'select' in element:
                     selects.append(element)
@@ -162,16 +275,13 @@ class MethodView(View):
                     numbers.append(element)
                 if 'highlighter' in element:
                     highlighters.append(element)
-                    #print(highlighters[0])
 
-            #print('drugipost')
             MethodView.inputParams = inputParams
             MethodView.selects = selects
             MethodView.numbers = numbers
             MethodView.highlighters = highlighters
-
         
-        if finalStep=="True": #apply method to selected images with set up input parameters and save images to a collection
+        if finalStep=="True": #apply method to selected images with set up input parameters and give option of saving images to a collection
             showFilesForm = False
             showCollectionsForm = False
 
@@ -181,7 +291,7 @@ class MethodView(View):
             MethodView.resultingImages = []
 
             #YOU CAN ITERATE ONLY ONCE THROUGH A ZIP!
-            MethodView.images = zip(MethodView.imagesUrls, MethodView.filenames)
+            MethodView.images = zip(MethodView.imagesUrls, MethodView.imageFileNames, MethodView.fileCollectionNames)
 
             #print("---Selected Selects---")
             index = 0 
@@ -227,97 +337,220 @@ class MethodView(View):
 
                 index = index + 1
 
-            #TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE TO BE DONE
+            
 
-            #create input in case of highlighter
+            index = 0
+            for element in MethodView.highlighters:
 
-            #check if files are visualizable, otherwise just give links to results
+                if index == 0 :
+                    respo = requests.get(MethodView.imagesUrls[0][0])
+                    img = Image.open(BytesIO(respo.content))
+                    width, height = img.size
+                    print("original size is: " + str(width) + " , " + str(height))
 
-            #create linking to result of each file individually rather than the whole group of them - check
+                    tempX0 = int(x0) * (width/250)
+                    tempX1 = int(x1) * (width/250)
+                    tempY0 = int(y0) * (height/400)
+                    tempY1 = int(y1) * (height/400)
 
-            #create multiple selects for multiple input
-
-            #enable collection creation from resulting files
+                    x0 = str(tempX0)
+                    x1 = str(tempX1)
+                    y0 = str(tempY0)
+                    y1 = str(tempY1)
+                    
+                data["parameters"]["highlighter"] = {
+                    "type":"rectangle",
+                    "closed": "true",
+                    "segments":[
+                    [x0,y0],
+                    [x1,y0],
+                    [x0,y1],
+                    [x1,y1]
+                  ]
+                }
+                index = index + 1
 
             MethodView.linksToResultingJson = []
-            
-            for element in MethodView.imagesUrls:
 
-                tempName = element.split('/')
-                tempName = tempName[-1]
+            #print(MethodView.imagesUrls[0])
 
-                data["data"][0] = {
-                    "inputImage": collectionName + "/" + tempName,
-                }
+            #one file collection and no folder collections
+            if MethodView.fileInput and MethodView.singleFileCollectionInput and not MethodView.folderInput:
+                for element in MethodView.imagesUrls[0]:
 
-                dataSend = json.dumps(data)
-                headers = {'Content-type': 'application/json'}
-                #print(url)
-                #print(dataSend)
-                responseToMethodApplication = requests.post("http://divaservices.unifr.ch/api/v2/"+url+"/1", data=dataSend, headers=headers)
-                responseToMethodApplication = responseToMethodApplication.json()
-                MethodView.responseToMethodApplication = responseToMethodApplication
-                #print("")
-                #print("Response of method application call:")
-                #print("")
-                #print(responseToMethodApplication)
-                #print("")
-                if 'status' in responseToMethodApplication:
-                    
-                    resultingOutput = requests.get(responseToMethodApplication["results"][0]["resultLink"])
-                    resultingOutput = resultingOutput.json()
+                    tempName = element.split('/')
+                    tempName = tempName[-1]
 
+                    data["data"][0] = {
+                        "inputImage": MethodView.fileCollectionNames[0] + "/" + tempName,
+                    }
+
+                    dataSend = json.dumps(data)
+                    headers = {'Content-type': 'application/json'}
+                    #print(url)
+                    #print(dataSend)
+                    responseToMethodApplication = requests.post("http://divaservices.unifr.ch/api/v2/"+url+"/1", data=dataSend, headers=headers)
+                    responseToMethodApplication = responseToMethodApplication.json()
+                    MethodView.responseToMethodApplication = responseToMethodApplication
                     #print("")
-                    #print(resultingOutput)
+                    #print("Response of method application call:")
                     #print("")
-
-                    while (resultingOutput['status'] == 'planned'):
-                        print('waiting on server..')
+                    #print(responseToMethodApplication)
+                    #print("")
+                    if 'status' in responseToMethodApplication:
+                        
                         resultingOutput = requests.get(responseToMethodApplication["results"][0]["resultLink"])
                         resultingOutput = resultingOutput.json()
 
-                    #print(resultingOutput)
+                        #print("")
+                        #print(resultingOutput)
+                        #print("")
 
-                    
+                        while (resultingOutput['status'] == 'planned'):
+                            print('waiting on server..')
+                            resultingOutput = requests.get(responseToMethodApplication["results"][0]["resultLink"])
+                            resultingOutput = resultingOutput.json()
 
-                    for element in resultingOutput['output']:
-                        if element['file']['options']['visualization'] == True:
-                            MethodView.resultingImages.append(element['file']['url'])
-                            MethodView.linksToResultingJson.append(resultingOutput['resultLink'])
-                        else :
-                            if element['file']['options']['type'] != "logfile":
+                        print(resultingOutput)
+                        for element in resultingOutput['output']:
+                            if element['file']['options']['visualization'] == True:
                                 MethodView.resultingImages.append(element['file']['url'])
                                 MethodView.linksToResultingJson.append(resultingOutput['resultLink'])
+                            #else :
+                                #if element['file']['options']['type'] != "logfile":
+                                    #MethodView.resultingImages.append(element['file']['url'])
+                                    #MethodView.linksToResultingJson.append(resultingOutput['resultLink'])
 
-                    i = 0
-                    MethodView.resultingFileNames=[]
-                    for f in MethodView.resultingImages:
-                        name = MethodView.filenames[i].split(".")
-                        name = name[0]
-                        ext = f.split('/')
-                        ext = ext[-1]
-                        ext = ext.split('.')
-                        ext = ext[1]
+                        i = 0
+                        MethodView.resultingFileNames=[]
+                        #print(MethodView.imageFileNames)
+                        for f in MethodView.resultingImages:
+                            name = MethodView.imageFileNames[0][i].split(".")
+                            name = name[0]
+                            ext = f.split('/')
+                            ext = ext[-1]
+                            ext = ext.split('.')
+                            ext = ext[1]
 
-                        MethodView.resultingFileNames.append(name + "." + ext)
+                            MethodView.resultingFileNames.append(name + "." + ext)
 
-                        i=i+1
+                            i=i+1
 
-                    MethodView.resultingImagesZip = zip(MethodView.resultingImages,MethodView.linksToResultingJson,MethodView.resultingFileNames)
+                        MethodView.resultingImagesZip = zip(MethodView.resultingImages,MethodView.linksToResultingJson,MethodView.resultingFileNames)
 
-                else: 
-                    if 'errorType' in responseToMethodApplication:
+                    else: 
+                        if 'errorType' in responseToMethodApplication:
 
+                            print("")
+                            print("ERROR BRANCH LINE 299 IN METHODVIEW.PY - SOMETHING IS BAD IN THE SENDING REQUEST (FILE NUMBER ETC..)")
+                            print("")
+                            print(responseToMethodApplication)
+                            print("")
+
+                            MethodView.linksToResultingJson.append(responseToMethodApplication['message'])
+                            MethodView.resultingImages.append(responseToMethodApplication['message'])
+            
+            else:
+                #if multiple file collections and/or there are folder collections, then single input per every collection
+                #MethodView.selectedInputJson - contains collections: {[ { name(collName), files: [{filenames, url}] } ]}
+                if (MethodView.fileInput and not MethodView.singleFileCollectionInput) or MethodView.folderInput:
+
+                        index = 0
+                        for collection in MethodView.selectedInputJson['collections']:
+
+                            if collection['name'] in MethodView.fileCollectionNames:
+                                print(collection)
+
+                                element = collection['files'][0]['url']
+
+                                print(element)
+
+                                tempName = element.split('/')
+                                tempName = tempName[-1]
+
+                                data["data"][0][MethodView.filesInputDetailsName[index]] = collection['name'] + "/" + tempName
+
+                            index = index + 1
+
+                        if MethodView.folderInput:
+                            index = 0
+                            for collection in MethodView.folderCollectionNames:
+
+                                data["data"][0][MethodView.foldersInputDetailsName[index]] = collection
+
+                                index = index + 1
+
+                        dataSend = json.dumps(data)
+                        headers = {'Content-type': 'application/json'}
+                        print(url)
+                        print(dataSend)
+                        responseToMethodApplication = requests.post("http://divaservices.unifr.ch/api/v2/"+url+"/1", data=dataSend, headers=headers)
+                        responseToMethodApplication = responseToMethodApplication.json()
+                        MethodView.responseToMethodApplication = responseToMethodApplication
                         print("")
-                        print("ERROR BRANCH LINE 299 IN METHODVIEW.PY - SOMETHING IS BAD IN THE SENDING REQUEST (FILE NUMBER ETC..)")
+                        print("Response of method application call:")
                         print("")
                         print(responseToMethodApplication)
                         print("")
 
-                        MethodView.linksToResultingJson.append(responseToMethodApplication['message'])
-                        MethodView.resultingImages.append(responseToMethodApplication['message'])
 
-        #Method applied and here we make a new collection out of the results
+                        if 'status' in responseToMethodApplication:
+                            
+                            resultingOutput = requests.get(responseToMethodApplication["results"][0]["resultLink"])
+                            resultingOutput = resultingOutput.json()
+
+                            print("")
+                            print(resultingOutput)
+                            print("")
+
+                            while (resultingOutput['status'] == 'planned'):
+                                print('waiting on server..')
+                                resultingOutput = requests.get(responseToMethodApplication["results"][0]["resultLink"])
+                                resultingOutput = resultingOutput.json()
+
+                            print(resultingOutput)
+
+                            for element in resultingOutput['output']:
+                                if 'file' in element:
+                                    if element['file']['options']['visualization'] == True:
+                                        MethodView.resultingImages.append(element['file']['url'])
+                                        MethodView.linksToResultingJson.append(resultingOutput['resultLink'])
+                                    #else :
+                                        #if element['file']['options']['type'] != "logfile":
+                                           #MethodView.resultingImages.append(element['file']['url'])
+                                            #MethodView.linksToResultingJson.append(resultingOutput['resultLink'])
+
+                            i = 0
+                            MethodView.resultingFileNames=[]
+                            print(MethodView.imageFileNames)
+                            for f in MethodView.resultingImages:
+                                name = MethodView.imageFileNames[0][i].split(".")
+                                name = name[0]
+                                ext = f.split('/')
+                                ext = ext[-1]
+                                ext = ext.split('.')
+                                ext = ext[1]
+                                MethodView.resultingFileNames.append(name + "." + ext)
+                                i=i+1
+                            MethodView.resultingImagesZip = zip(MethodView.resultingImages,MethodView.linksToResultingJson,MethodView.resultingFileNames)
+                        else: 
+                            if 'errorType' in responseToMethodApplication:
+
+                                print("")
+                                print("ERROR BRANCH LINE 299 IN METHODVIEW.PY - SOMETHING IS BAD IN THE SENDING REQUEST")
+                                print("")
+                                print(responseToMethodApplication)
+                                print("")
+
+                                MethodView.linksToResultingJson.append(responseToMethodApplication['message'])
+                                MethodView.resultingImages.append(responseToMethodApplication['message'])
+
+
+                        
+
+                
+
+        #Method applied and here we make a new collection with a chosen name, containing the results
         if makeCollection == 'True':
             num = len(MethodView.resultingImages)
             i = 0
@@ -393,9 +626,8 @@ class MethodView(View):
             "methodName": MethodView.methodName,
             "showCollectionsForm": showCollectionsForm,
             "showFilesForm": showFilesForm,
-            "collectionName": collectionName,
             "imgNames": MethodView.imgNames,
-            "images": MethodView.images,
+            "selectedInputJson": MethodView.selectedInputJson,
             "isXML": MethodView.isXML,
             "url": url,
             "inputParams": MethodView.inputParams['input'],
@@ -411,5 +643,10 @@ class MethodView(View):
             "imageUrls": MethodView.imageUrls,
             "linksToResultingJson": MethodView.linksToResultingJson,
             "resultingImagesZip": MethodView.resultingImagesZip,
+            "fileCollectionNames": MethodView.fileCollectionNames,
+            "folderCollectionNames": MethodView.folderCollectionNames,
+            "colectionsFilesNames": MethodView.colectionsFilesNames,
+            "highlightersExist": MethodView.highlightersExist,
+            "multipleInput": MethodView.multipleInput,
         }
         return render(request, "method.html", context)
