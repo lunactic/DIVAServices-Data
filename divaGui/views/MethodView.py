@@ -149,6 +149,9 @@ class MethodView(View):
         x1 = self.request.POST.get("x1")
         y1 = self.request.POST.get("y1")
 
+        myWidth = 250
+        myHeight = 400
+
         MethodView.methodName = self.request.POST.get("methodName")
 
         if(len(MethodView.fileCollectionNames)==0):
@@ -176,6 +179,24 @@ class MethodView(View):
         numbers = []
         highlighters = []
 
+        reqestMethodJson = requests.get("http://divaservices.unifr.ch/api/v2/"+url+"/1")
+        inputParams = reqestMethodJson.json()   
+
+        #initialize backend input parameters
+        for element in inputParams['input']:
+            if 'select' in element:
+                selects.append(element)
+            if 'number' in element:
+                numbers.append(element)
+            if 'highlighter' in element:
+                highlighters.append(element)
+
+        
+        MethodView.inputParams = inputParams
+        MethodView.selects = selects
+        MethodView.numbers = numbers
+        MethodView.highlighters = highlighters
+
         showCollectionsForm = False
         showFilesForm = False
 
@@ -186,9 +207,10 @@ class MethodView(View):
             MethodView.multipleInput = True
 
 
-        print(MethodView.multipleInput)
+
+        print("multiple: " + str(MethodView.multipleInput))
         print(MethodView.fileCollectionNames)
-        print(MethodView.highlightersExist)
+        print("highlighter exists: " + str(MethodView.highlightersExist))
         print(MethodView.highlighters)
 
 
@@ -261,25 +283,6 @@ class MethodView(View):
                 i = i + 1
 
             MethodView.selectedInputJson = data
-
-            #print(MethodView.selectedInputJson)
-
-            reqestMethodJson = requests.get("http://divaservices.unifr.ch/api/v2/"+url+"/1")
-            inputParams = reqestMethodJson.json()   
-
-            #initialize backend input parameters
-            for element in inputParams['input']:
-                if 'select' in element:
-                    selects.append(element)
-                if 'number' in element:
-                    numbers.append(element)
-                if 'highlighter' in element:
-                    highlighters.append(element)
-
-            MethodView.inputParams = inputParams
-            MethodView.selects = selects
-            MethodView.numbers = numbers
-            MethodView.highlighters = highlighters
         
         if finalStep=="True": #apply method to selected images with set up input parameters and give option of saving images to a collection
             showFilesForm = False
@@ -348,24 +351,39 @@ class MethodView(View):
                     width, height = img.size
                     print("original size is: " + str(width) + " , " + str(height))
 
-                    tempX0 = int(x0) * (width/250)
-                    tempX1 = int(x1) * (width/250)
-                    tempY0 = int(y0) * (height/400)
-                    tempY1 = int(y1) * (height/400)
+                    tempRatio = myHeight/myWidth
 
-                    x0 = str(tempX0)
+                    print("original h/w: " + str(height/width) + " compared to my h/w: " + str(tempRatio))
+
+                    if height/width < tempRatio:
+                        myHeight = height//(width/myWidth)
+                        myHeight = int(myHeight)
+                        print("Calculated height by ratio: " + str(myHeight))
+                    else:
+                        if height/width > tempRatio:
+                            myWidth = width//(height/myHeight)
+                            myWidth = int(myWidth)
+                            print("Calculated width by ratio: " + str(myWidth))
+
+
+                    tempX0 = int(x0) * (width//myWidth)
+                    tempX1 = int(x1) * (width//myWidth)
+                    tempY0 = int(y0) * (height//myHeight)
+                    tempY1 = int(y1) * (height//myHeight)
+
+                    x0 = str(tempX0) 
                     x1 = str(tempX1)
                     y0 = str(tempY0)
                     y1 = str(tempY1)
-                    
+
                 data["parameters"]["highlighter"] = {
                     "type":"rectangle",
                     "closed": "true",
                     "segments":[
                     [x0,y0],
-                    [x1,y0],
                     [x0,y1],
-                    [x1,y1]
+                    [x1,y1],
+                    [x1,y0]
                   ]
                 }
                 index = index + 1
@@ -391,6 +409,7 @@ class MethodView(View):
                     #print(dataSend)
                     responseToMethodApplication = requests.post("http://divaservices.unifr.ch/api/v2/"+url+"/1", data=dataSend, headers=headers)
                     responseToMethodApplication = responseToMethodApplication.json()
+                    #responseToMethodApplication = {}
                     MethodView.responseToMethodApplication = responseToMethodApplication
                     #print("")
                     #print("Response of method application call:")
@@ -413,13 +432,14 @@ class MethodView(View):
 
                         print(resultingOutput)
                         for element in resultingOutput['output']:
-                            if element['file']['options']['visualization'] == True:
-                                MethodView.resultingImages.append(element['file']['url'])
-                                MethodView.linksToResultingJson.append(resultingOutput['resultLink'])
-                            #else :
-                                #if element['file']['options']['type'] != "logfile":
-                                    #MethodView.resultingImages.append(element['file']['url'])
-                                    #MethodView.linksToResultingJson.append(resultingOutput['resultLink'])
+                            if 'file' in element:
+                                if element['file']['options']['visualization'] == True:
+                                    MethodView.resultingImages.append(element['file']['url'])
+                                    MethodView.linksToResultingJson.append(resultingOutput['resultLink'])
+                                #else :
+                                    #if element['file']['options']['type'] != "logfile":
+                                        #MethodView.resultingImages.append(element['file']['url'])
+                                        #MethodView.linksToResultingJson.append(resultingOutput['resultLink'])
 
                         i = 0
                         MethodView.resultingFileNames=[]
